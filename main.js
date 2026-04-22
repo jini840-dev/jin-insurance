@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Kakao SDK 초기화 (본인의 JavaScript 키로 교체하세요)
+    // 예: Kakao.init('1234567890abcdef...');
+    const KAKAO_JS_KEY = '7b303a7349ab87068d7888a55dc195af'; // 여기에 키를 입력하세요
+    
+    if (typeof Kakao !== 'undefined') {
+        if (!Kakao.isInitialized()) {
+            Kakao.init(KAKAO_JS_KEY);
+        }
+    }
+
     // 페이지 요소
     const pages = {
         intro: document.getElementById('page-intro'),
@@ -40,16 +50,49 @@ document.addEventListener('DOMContentLoaded', () => {
         pages[pageId].classList.remove('hidden');
     }
 
-    // 1. 로그인 로직 (시뮬레이션)
+    // 1. 카카오 로그인 로직
     document.getElementById('btn-kakao-login').addEventListener('click', () => {
-        // 실제로는 카카오 API 호출이 들어갈 자리입니다.
-        const nickname = prompt("사용하실 닉네임을 입력해 주세요!", "성장크루 #지니");
-        if (nickname) {
-            user.nickname = nickname;
-            document.getElementById('user-nickname').innerText = user.nickname;
-            updateDashboard();
-            switchPage('dashboard');
+        if (KAKAO_JS_KEY === 'YOUR_KAKAO_JS_KEY') {
+            alert('카카오 JavaScript 키가 설정되지 않았습니다. main.js 상단의 KAKAO_JS_KEY를 설정해 주세요.');
+            // 테스트용 시뮬레이션 유지
+            const nickname = prompt("사용하실 닉네임을 입력해 주세요!", "성장크루 #지니");
+            if (nickname) {
+                user.nickname = nickname;
+                document.getElementById('user-nickname').innerText = user.nickname;
+                updateDashboard();
+                switchPage('dashboard');
+            }
+            return;
         }
+
+        Kakao.Auth.login({
+            success: function(authObj) {
+                console.log('Login Success:', authObj);
+                // 로그인 성공 시 사용자 정보 가져오기
+                Kakao.API.request({
+                    url: '/v2/user/me',
+                    success: function(res) {
+                        console.log('User Info:', res);
+                        const kakaoNickname = res.kakao_account.profile.nickname;
+                        
+                        // 사용자 정보 업데이트
+                        user.nickname = kakaoNickname || '성장크루';
+                        document.getElementById('user-nickname').innerText = user.nickname;
+                        
+                        // 대시보드로 이동
+                        updateDashboard();
+                        switchPage('dashboard');
+                    },
+                    fail: function(error) {
+                        console.error('Failed to get user info:', error);
+                    }
+                });
+            },
+            fail: function(err) {
+                console.error('Login Failed:', err);
+                alert('카카오 로그인에 실패했습니다.');
+            },
+        });
     });
 
     // 2. 대시보드 업데이트 및 복리 계산
