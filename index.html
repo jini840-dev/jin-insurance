@@ -1,14 +1,102 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIN-Growth | 힙한 성장의 시작</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+    <div class="app-container">
+        <!-- 1. Intro Page -->
+        <section id="page-intro" class="page">
+            <div class="logo-area">
+                <h1 class="logo-main">JIN-GROWTH</h1>
+                <p class="logo-sub">힙하게 자산을 키우는 청소년 마중물</p>
+            </div>
+            <div class="login-btns">
+                <button id="btn-kakao-login" class="btn-kakao">
+                    <i class="fas fa-comment"></i> 카카오계정으로 시작
+                </button>
+                <button class="btn-phone">휴대폰 번호로 시작</button>
+            </div>
+            <!-- 배경음악 플레이어 (플레이스홀더) -->
+            <div id="bg-music-player" style="margin-top: 40px; color: #39ff14; font-size: 0.8rem;">
+                <i class="fas fa-music"></i> Now Playing: HipHop_Beat_01.mp3
+            </div>
+        </section>
+
+        <!-- 2. Dashboard Page -->
+        <section id="page-dashboard" class="page hidden">
+            <header class="header-growth">
+                <div class="user-status">
+                    <div class="welcome-msg">
+                        <span id="user-nickname">성장크루 #지니</span>
+                        <h2>오늘도 레벨업! 🔥</h2>
+                    </div>
+                    <div class="point-status">
+                        <span class="point-label">MY POINTS</span>
+                        <span id="user-points" class="points">1,250</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 복리 계산 자산 카드 -->
+            <div class="future-asset-card">
+                <h3>성인이 되었을 때 내 자산은?</h3>
+                <div class="asset-amount">₩ <span id="future-asset-value">2,450,000</span></div>
+                <p class="asset-desc">*현재 포인트 기반 연 5% 복리 시뮬레이션</p>
+            </div>
+
+            <div class="section-title">
+                <h4>진행 중인 미션</h4>
+                <span id="go-admin" class="btn-admin-link">미션 관리(운영자)</span>
+            </div>
+
+            <div id="mission-container" class="mission-list">
+                <!-- 미션 카드가 JS를 통해 동적으로 생성됩니다 -->
+            </div>
+
+            <nav class="bottom-nav">
+                <div class="nav-item active"><i class="fas fa-home"></i></div>
+                <div class="nav-item"><i class="fas fa-bolt"></i></div>
+                <div class="nav-item"><i class="fas fa-gift"></i></div>
+                <div class="nav-item"><i class="fas fa-user"></i></div>
+            </nav>
+        </section>
+
+        <!-- 3. Admin Page -->
+        <section id="page-admin" class="page hidden">
+            <div class="admin-header">
+                <h2>챌린지 등록 (운영자)</h2>
+                <p>청소년들을 위한 새로운 성장을 설계하세요.</p>
+            </div>
+
+            <form id="mission-form">
+                <div class="form-group">
+                    <label>챌린지 종류</label>
+                    <select id="mission-type">
+                        <option value="study">공부/독서 타이머 챌린지</option>
+                        <option value="quiz">행운자산화 퀴즈 챌린지</option>
+                        <option value="family">효도활동 자산화 챌린지</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>챌린지 명</label>
+                    <input type="text" id="mission-title" placeholder="예: 매일 영단어 10개">
+                </div>
+                <div class="form-group">
+                    <label>보상 포인트</label>
+                    <input type="number" id="mission-reward" placeholder="500">
+                </div>
+                <button type="submit" class="btn-submit">챌린지 오픈하기</button>
+            </form>
+            <button id="btn-admin-back" class="btn-back">대시보드로 돌아가기</button>
+        </section>
+    </div>
+
+    <script src="main.js"></script>
 </body>
 </html>

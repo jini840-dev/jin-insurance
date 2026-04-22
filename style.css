@@ -1,1 +1,329 @@
-/* Add styles here */
+:root {
+    --bg-black: #0a0a0a;
+    --card-dark: #1a1a1a;
+    --neon-green: #39ff14;
+    --neon-purple: #bc13fe;
+    --neon-pink: #ff00ff;
+    --text-white: #ffffff;
+    --text-gray: #a0a0a0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', sans-serif;
+}
+
+body {
+    background-color: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--text-white);
+}
+
+.app-container {
+    width: 100%;
+    max-width: 420px;
+    height: 90vh;
+    background-color: var(--bg-black);
+    border-radius: 40px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(57, 255, 20, 0.2);
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #333;
+}
+
+/* Page Transitions */
+.page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 24px;
+    transition: transform 0.3s ease-out;
+    background-color: var(--bg-black);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* 1. Intro Page (Login) */
+#page-intro {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(180deg, var(--bg-black) 0%, #1a1a1a 100%);
+}
+
+.logo-area {
+    margin-bottom: 60px;
+}
+
+.logo-main {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    color: var(--neon-green);
+    text-shadow: 0 0 10px var(--neon-green);
+    font-style: italic;
+}
+
+.logo-sub {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    margin-top: -10px;
+}
+
+.login-btns {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-kakao {
+    background-color: #FEE500;
+    color: #3C1E1E;
+    border: none;
+    padding: 18px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.btn-phone {
+    background-color: transparent;
+    color: var(--text-white);
+    border: 1px solid #444;
+    padding: 18px;
+    border-radius: 16px;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+/* 2. Dashboard Page */
+.header-growth {
+    margin-bottom: 24px;
+}
+
+.user-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.welcome-msg h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.welcome-msg span {
+    color: var(--neon-purple);
+    font-size: 0.9rem;
+}
+
+.point-status {
+    text-align: right;
+}
+
+.points {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--neon-green);
+}
+
+.point-label {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    display: block;
+}
+
+/* Future Asset Card */
+.future-asset-card {
+    background: linear-gradient(135deg, var(--neon-purple), #6366f1);
+    padding: 24px;
+    border-radius: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 20px rgba(188, 19, 254, 0.3);
+}
+
+.future-asset-card h3 {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 8px;
+}
+
+.asset-amount {
+    font-size: 2rem;
+    font-weight: 900;
+}
+
+.asset-desc {
+    font-size: 0.8rem;
+    margin-top: 8px;
+    opacity: 0.7;
+}
+
+/* Mission List */
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-title h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.btn-admin-link {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.mission-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.mission-card {
+    background-color: var(--card-dark);
+    border: 1px solid #333;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.mission-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.mission-tag {
+    font-size: 0.7rem;
+    background-color: #333;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: var(--neon-green);
+}
+
+.mission-period {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+}
+
+.mission-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.progress-container {
+    background-color: #000;
+    height: 10px;
+    border-radius: 5px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-green), #00ffcc);
+    width: 0%;
+    transition: width 0.5s;
+}
+
+.mission-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+.reward-points {
+    color: var(--neon-purple);
+    font-weight: 700;
+}
+
+/* 3. Admin Page */
+.admin-header {
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    background-color: var(--card-dark);
+    border: 1px solid #444;
+    padding: 14px;
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+}
+
+.btn-submit {
+    background-color: var(--neon-green);
+    color: black;
+    border: none;
+    padding: 18px;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.btn-back {
+    margin-top: 15px;
+    background: transparent;
+    color: var(--text-gray);
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+    height: 80px;
+    background-color: #000;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #222;
+}
+
+.nav-item {
+    color: #555;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.nav-item.active {
+    color: var(--neon-green);
+}
