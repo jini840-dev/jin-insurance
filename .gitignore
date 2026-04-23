@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+dist/
+platforms/
+plugins/
+www/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/app/release/
+android/app/debug/
+capacitor.config.json.bak
+package-lock.json
