@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l686vVv9NnSqFfByX54S9jZqL8hUjPAtH9E9bL43zEw/C8kP9W1t+fB3m8S8T5C9" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="app-container">
@@ -18,16 +17,28 @@
                 <p class="logo-sub">힙하게 자산을 키우는 청소년 마중물</p>
             </div>
             <div class="login-btns">
-                <button id="btn-kakao-login" class="btn-kakao">
-                    <i class="fas fa-comment"></i> 카카오계정으로 시작
+                <button id="btn-phone-login" class="btn-phone">
+                    <i class="fas fa-mobile-alt"></i> 휴대폰 번호로 시작
                 </button>
-                <button class="btn-phone">휴대폰 번호로 시작</button>
             </div>
             <!-- 배경음악 플레이어 (플레이스홀더) -->
             <div id="bg-music-player" style="margin-top: 40px; color: #39ff14; font-size: 0.8rem;">
                 <i class="fas fa-music"></i> Now Playing: HipHop_Beat_01.mp3
             </div>
         </section>
+
+        <!-- 휴대폰 번호 입력 모달 -->
+        <div id="modal-phone" class="modal hidden">
+            <div class="modal-content">
+                <h3>휴대폰 번호 입력</h3>
+                <p>성장을 시작할 휴대폰 번호를 입력해 주세요.</p>
+                <input type="tel" id="input-phone" placeholder="010-0000-0000" maxlength="13">
+                <div class="modal-btns">
+                    <button id="btn-modal-close" class="btn-secondary">취소</button>
+                    <button id="btn-phone-submit" class="btn-primary">시작하기</button>
+                </div>
+            </div>
+        </div>
 
         <!-- 2. Dashboard Page -->
         <section id="page-dashboard" class="page hidden">

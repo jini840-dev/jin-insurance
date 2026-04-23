@@ -1,14 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Kakao SDK 초기화 (본인의 JavaScript 키로 교체하세요)
-    // 예: Kakao.init('1234567890abcdef...');
-    const KAKAO_JS_KEY = '7b303a7349ab87068d7888a55dc195af'; // 여기에 키를 입력하세요
-    
-    if (typeof Kakao !== 'undefined') {
-        if (!Kakao.isInitialized()) {
-            Kakao.init(KAKAO_JS_KEY);
-        }
-    }
-
     // 페이지 요소
     const pages = {
         intro: document.getElementById('page-intro'),
@@ -16,11 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
         admin: document.getElementById('page-admin')
     };
 
+    // 모달 요소
+    const modalPhone = document.getElementById('modal-phone');
+    const inputPhone = document.getElementById('input-phone');
+
     // 상태 관리
     let user = {
-        nickname: '지니',
+        nickname: '성장크루',
+        phone: '',
         points: 1250,
-        age: 16 // 현재 나이 (가정)
+        age: 16 
     };
 
     let missions = [
@@ -50,58 +45,57 @@ document.addEventListener('DOMContentLoaded', () => {
         pages[pageId].classList.remove('hidden');
     }
 
-    // 1. 카카오 로그인 로직
-    document.getElementById('btn-kakao-login').addEventListener('click', () => {
-        if (KAKAO_JS_KEY === 'YOUR_KAKAO_JS_KEY') {
-            alert('카카오 JavaScript 키가 설정되지 않았습니다. main.js 상단의 KAKAO_JS_KEY를 설정해 주세요.');
-            // 테스트용 시뮬레이션 유지
-            const nickname = prompt("사용하실 닉네임을 입력해 주세요!", "성장크루 #지니");
-            if (nickname) {
-                user.nickname = nickname;
-                document.getElementById('user-nickname').innerText = user.nickname;
-                updateDashboard();
-                switchPage('dashboard');
-            }
+    // --- 휴대폰 로그인 로직 ---
+
+    // 1. 휴대폰 번호로 시작 버튼 클릭 시 모달 열기
+    document.getElementById('btn-phone-login').addEventListener('click', () => {
+        modalPhone.classList.remove('hidden');
+        inputPhone.focus();
+    });
+
+    // 2. 모달 닫기 (취소 버튼)
+    document.getElementById('btn-modal-close').addEventListener('click', () => {
+        modalPhone.classList.add('hidden');
+        inputPhone.value = '';
+    });
+
+    // 3. 휴대폰 번호 입력 자동 하이픈 (선택사항)
+    inputPhone.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/[^0-9]/g, '');
+        if (val.length > 3 && val.length <= 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3);
+        } else if (val.length > 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7);
+        }
+        e.target.value = val;
+    });
+
+    // 4. 시작하기 버튼 클릭 시 대시보드 진입
+    document.getElementById('btn-phone-submit').addEventListener('click', () => {
+        const phoneVal = inputPhone.value;
+        if (phoneVal.length < 10) {
+            alert('올바른 휴대폰 번호를 입력해 주세요.');
             return;
         }
 
-        Kakao.Auth.login({
-            success: function(authObj) {
-                console.log('Login Success:', authObj);
-                // 로그인 성공 시 사용자 정보 가져오기
-                Kakao.API.request({
-                    url: '/v2/user/me',
-                    success: function(res) {
-                        console.log('User Info:', res);
-                        const kakaoNickname = res.kakao_account.profile.nickname;
-                        
-                        // 사용자 정보 업데이트
-                        user.nickname = kakaoNickname || '성장크루';
-                        document.getElementById('user-nickname').innerText = user.nickname;
-                        
-                        // 대시보드로 이동
-                        updateDashboard();
-                        switchPage('dashboard');
-                    },
-                    fail: function(error) {
-                        console.error('Failed to get user info:', error);
-                    }
-                });
-            },
-            fail: function(err) {
-                console.error('Login Failed:', err);
-                alert('카카오 로그인에 실패했습니다.');
-            },
-        });
+        user.phone = phoneVal;
+        // 뒷번호 4자리를 닉네임에 활용 (예: 성장크루 #1234)
+        const lastFour = phoneVal.slice(-4);
+        user.nickname = `성장크루 #${lastFour}`;
+        
+        document.getElementById('user-nickname').innerText = user.nickname;
+        
+        modalPhone.classList.add('hidden');
+        updateDashboard();
+        switchPage('dashboard');
     });
 
     // 2. 대시보드 업데이트 및 복리 계산
     function updateDashboard() {
         document.getElementById('user-points').innerText = user.points.toLocaleString();
         
-        // 복리 계산 시뮬레이션: (포인트 * 1000)원을 연 5% 복리로 20세까지 굴렸을 때
         const yearsToAdult = 20 - user.age;
-        const principal = user.points * 1000; // 1포인트당 1000원의 가치로 가정
+        const principal = user.points * 1000; 
         const rate = 0.05;
         const futureValue = principal * Math.pow((1 + rate), yearsToAdult);
         
@@ -160,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDashboard();
         switchPage('dashboard');
         
-        // 폼 초기화
         e.target.reset();
     });
 });
