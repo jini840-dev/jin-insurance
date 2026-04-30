@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 데이터 초기화 (localStorage) ---
+    if (!localStorage.getItem('users')) {
+        const initialUsers = [
+            { id: 'jin_01', phone: '010-1234-5678', nickname: '지니' },
+            { id: 'growth_expert', phone: '010-9876-5432', nickname: '성장전문가' },
+            { id: 'tester', phone: '010-0000-0000', nickname: '테스터' }
+        ];
+        localStorage.setItem('users', JSON.stringify(initialUsers));
+    }
+
     // 페이지 요소
     const pages = {
         intro: document.getElementById('page-intro'),
@@ -11,12 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputPhone = document.getElementById('input-phone');
 
     // 상태 관리
-    let user = {
-        nickname: '성장크루',
-        phone: '',
-        points: 1250,
-        age: 16 
-    };
+    let currentUser = null;
+    let currentUsageId = null;
 
     let missions = [
         {
@@ -39,6 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
+    // 날짜 포맷팅 함수 (YYYY-MM-DD HH:mm)
+    function formatDate(date) {
+        const d = new Date(date);
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
     // 페이지 전환 함수
     function switchPage(pageId) {
         Object.values(pages).forEach(page => page.classList.add('hidden'));
@@ -47,19 +60,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 휴대폰 로그인 로직 ---
 
-    // 1. 휴대폰 번호로 시작 버튼 클릭 시 모달 열기
     document.getElementById('btn-phone-login').addEventListener('click', () => {
         modalPhone.classList.remove('hidden');
         inputPhone.focus();
     });
 
-    // 2. 모달 닫기 (취소 버튼)
     document.getElementById('btn-modal-close').addEventListener('click', () => {
         modalPhone.classList.add('hidden');
         inputPhone.value = '';
     });
 
-    // 3. 휴대폰 번호 입력 자동 하이픈 (선택사항)
     inputPhone.addEventListener('input', (e) => {
         let val = e.target.value.replace(/[^0-9]/g, '');
         if (val.length > 3 && val.length <= 7) {
@@ -70,32 +80,70 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.value = val;
     });
 
-    // 4. 시작하기 버튼 클릭 시 대시보드 진입
+    // 로그인 및 사용 기록 시작
     document.getElementById('btn-phone-submit').addEventListener('click', () => {
         const phoneVal = inputPhone.value;
-        if (phoneVal.length < 10) {
-            alert('올바른 휴대폰 번호를 입력해 주세요.');
+        const users = JSON.parse(localStorage.getItem('users'));
+        
+        // 1. 사용자 확인
+        const foundUser = users.find(u => u.phone === phoneVal);
+
+        if (!foundUser) {
+            alert('등록되지 않은 사용자입니다. 관리자에게 문의하세요.');
             return;
         }
 
-        user.phone = phoneVal;
-        // 뒷번호 4자리를 닉네임에 활용 (예: 성장크루 #1234)
-        const lastFour = phoneVal.slice(-4);
-        user.nickname = `성장크루 #${lastFour}`;
-        
-        document.getElementById('user-nickname').innerText = user.nickname;
-        
+        // 2. 로그인 성공 처리
+        currentUser = {
+            ...foundUser,
+            points: 1250, // 기본 포인트 (실제로는 유저 DB에서 가져와야 함)
+            age: 16
+        };
+
+        // 3. 휴대폰 사용 정보 기록 (시작)
+        const startTime = formatDate(new Date());
+        currentUsageId = Date.now();
+        const usageLog = JSON.parse(localStorage.getItem('usage_logs') || '[]');
+        usageLog.push({
+            usageId: currentUsageId,
+            userId: currentUser.id,
+            phone: currentUser.phone,
+            startTime: startTime,
+            endTime: null
+        });
+        localStorage.setItem('usage_logs', JSON.stringify(usageLog));
+
+        // UI 업데이트
+        document.getElementById('user-nickname').innerText = `${currentUser.nickname} (#${currentUser.id})`;
         modalPhone.classList.add('hidden');
         updateDashboard();
         switchPage('dashboard');
+        console.log(`[Login] ${currentUser.id} started at ${startTime}`);
     });
 
-    // 2. 대시보드 업데이트 및 복리 계산
+    // 로그아웃 및 사용 기록 종료
+    function logout() {
+        if (currentUsageId) {
+            const usageLog = JSON.parse(localStorage.getItem('usage_logs') || '[]');
+            const index = usageLog.findIndex(log => log.usageId === currentUsageId);
+            if (index !== -1) {
+                usageLog[index].endTime = formatDate(new Date());
+                localStorage.setItem('usage_logs', JSON.stringify(usageLog));
+                console.log(`[Logout] Recorded end time for ${currentUser.id}`);
+            }
+        }
+        currentUser = null;
+        currentUsageId = null;
+        switchPage('intro');
+    }
+
+    // --- 대시보드 로직 ---
     function updateDashboard() {
-        document.getElementById('user-points').innerText = user.points.toLocaleString();
+        if (!currentUser) return;
+        document.getElementById('user-points').innerText = currentUser.points.toLocaleString();
         
-        const yearsToAdult = 20 - user.age;
-        const principal = user.points * 1000; 
+        const yearsToAdult = 20 - currentUser.age;
+        const principal = currentUser.points * 1000; 
         const rate = 0.05;
         const futureValue = principal * Math.pow((1 + rate), yearsToAdult);
         
@@ -104,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMissions();
     }
 
-    // 3. 미션 카드 렌더링
     function renderMissions() {
         const container = document.getElementById('mission-container');
         container.innerHTML = '';
@@ -130,20 +177,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. 관리자 페이지 전환
+    // 관리자/로그아웃 버튼 이벤트
     document.getElementById('go-admin').addEventListener('click', () => switchPage('admin'));
     document.getElementById('btn-admin-back').addEventListener('click', () => switchPage('dashboard'));
+    
+    // 로그아웃 버튼 (HTML에 추가 필요)
+    const logoutBtn = document.createElement('button');
+    logoutBtn.innerText = '로그아웃';
+    logoutBtn.className = 'btn-logout'; // 스타일 필요
+    logoutBtn.style.cssText = 'margin-top: 20px; background: #333; color: #fff; border: none; padding: 10px; border-radius: 8px; width: 100%;';
+    logoutBtn.addEventListener('click', logout);
+    pages.dashboard.appendChild(logoutBtn);
 
-    // 5. 미션 등록 로직
+    // 미션 등록 로직
     document.getElementById('mission-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        
         const typeSelect = document.getElementById('mission-type');
         const newMission = {
             id: Date.now(),
             tag: typeSelect.options[typeSelect.selectedIndex].text.split(' ')[0],
             title: document.getElementById('mission-title').value,
-            start: new Date().toLocaleDateString(),
+            start: formatDate(new Date()).split(' ')[0],
             end: '미정',
             progress: 0,
             reward: parseInt(document.getElementById('mission-reward').value)
@@ -153,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('새로운 성장의 기회가 등록되었습니다! 🚀');
         updateDashboard();
         switchPage('dashboard');
-        
         e.target.reset();
     });
 });
+
