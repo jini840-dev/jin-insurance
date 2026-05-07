@@ -57,6 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('users', JSON.stringify(initialUsers));
     }
 
+    if (!localStorage.getItem('missions')) {
+        const initialMissions = [
+            { id: 1, tag: '공부', title: '매일 영단어 20개 외우기', start: '2026.05.01', end: '2026.05.31', progress: 65, reward: 500 },
+            { id: 2, tag: '퀴즈', title: '경제 상식 퀴즈 챌린지', start: '2026.05.05', end: '2026.05.12', progress: 30, reward: 200 },
+            { id: 3, tag: '효도', title: '부모님 안마해드리기', start: '2026.05.07', end: '2026.05.14', progress: 0, reward: 1000 }
+        ];
+        localStorage.setItem('missions', JSON.stringify(initialMissions));
+    }
+
     // 페이지 요소
     const pages = {
         intro: document.getElementById('page-intro'),
@@ -87,10 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let correctAnswersCount = 0;
     let selectedOptionIdx = null;
 
-    let missions = [
-        { id: 1, tag: '공부', title: '매일 영단어 20개 외우기', start: '2026.04.01', end: '2026.04.30', progress: 65, reward: 500 },
-        { id: 2, tag: '퀴즈', title: '경제 상식 퀴즈 챌린지', start: '2026.04.15', end: '2026.04.22', progress: 30, reward: 200 }
-    ];
+    function getMissions() {
+        return JSON.parse(localStorage.getItem('missions') || '[]');
+    }
 
     function formatDate(date) {
         const d = new Date(date);
@@ -104,6 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 로그인 로직 ---
+    document.getElementById('btn-kakao-login').addEventListener('click', () => {
+        // 카카오 자동 로그인 시뮬레이션
+        alert('카카오 계정으로 자동 로그인합니다... ⚡️');
+        loginUser('010-0000-0000', '카카오크루');
+    });
+
     document.getElementById('btn-phone-login').addEventListener('click', () => { modalPhone.classList.remove('hidden'); inputNickname.focus(); });
     document.getElementById('btn-modal-close').addEventListener('click', () => { modalPhone.classList.add('hidden'); inputNickname.value = ''; inputPhone.value = ''; });
 
@@ -118,14 +132,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const nickVal = inputNickname.value.trim();
         const phoneVal = inputPhone.value.trim();
         if (nickVal.length < 2 || phoneVal.length < 10) { alert('정확한 정보를 입력해 주세요.'); return; }
+        loginUser(phoneVal, nickVal);
+    });
 
+    function loginUser(phone, nickname) {
         let users = JSON.parse(localStorage.getItem('users') || '[]');
-        let foundUser = users.find(u => u.phone === phoneVal);
+        let foundUser = users.find(u => u.phone === phone);
         if (!foundUser) {
-            foundUser = { id: 'user_' + Date.now(), phone: phoneVal, nickname: nickVal, points: 1250 };
+            foundUser = { id: 'user_' + Date.now(), phone: phone, nickname: nickname, points: 1250 };
             users.push(foundUser);
         } else {
-            foundUser.nickname = nickVal;
+            foundUser.nickname = nickname;
         }
         localStorage.setItem('users', JSON.stringify(users));
         currentUser = { ...foundUser, age: 16 };
@@ -137,9 +154,19 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('usage_logs', JSON.stringify(usageLog));
 
         document.getElementById('user-nickname').innerText = `${currentUser.nickname} (#${currentUser.id})`;
-        modalPhone.classList.add('hidden');
+        if (modalPhone) modalPhone.classList.add('hidden');
         updateDashboard();
         switchPage('dashboard');
+    }
+
+    // --- 음악 플레이어 로직 ---
+    const musicPlayToggle = document.getElementById('music-play-toggle');
+    let isPlaying = false;
+    musicPlayToggle.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        musicPlayToggle.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+        const visualizer = document.querySelector('.visualizer');
+        visualizer.style.opacity = isPlaying ? '1' : '0.3';
     });
 
     // --- 경제 퀴즈 로직 ---
@@ -217,6 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-admin-back').addEventListener('click', () => switchPage('dashboard'));
 
+    // --- 자산 정보 안내 ---
+    document.getElementById('btn-asset-info').addEventListener('click', () => {
+        alert('현재 보유하신 포인트(1P = 1,000원 환산)를 기반으로, 연 5% 복리 수익률을 적용하여 만 20세 성인이 되었을 때의 예상 자산을 계산한 결과입니다. 🚀\n\n꾸준한 미션 수행으로 미래의 나를 위한 마중물을 준비하세요!');
+    });
+
     function updateDashboard() {
         if (!currentUser) return;
         document.getElementById('user-points').innerText = currentUser.points.toLocaleString();
@@ -228,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMissions() {
         const container = document.getElementById('mission-container');
         container.innerHTML = '';
+        const missions = getMissions();
         missions.forEach(m => {
             const card = document.createElement('div');
             card.className = 'mission-card';
@@ -235,11 +268,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="mission-top"><span class="mission-tag">${m.tag}</span><span class="mission-period">${m.start} ~ ${m.end}</span></div>
                 <div class="mission-title">${m.title}</div>
                 <div class="progress-container"><div class="progress-fill" style="width: ${m.progress}%"></div></div>
-                <div class="mission-footer"><span>성공률 ${m.progress}%</span><span class="reward-points">+${m.reward}P 예정</span></div>
+                <div class="mission-footer"><span>성공률 ${m.progress}%</span><span class="reward-points">+${m.reward.toLocaleString()}P 예정</span></div>
             `;
             container.appendChild(card);
         });
     }
+
+    // --- 미션 등록 (운영자) ---
+    const missionForm = document.getElementById('mission-form');
+    missionForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const typeSelect = document.getElementById('mission-type');
+        const titleInput = document.getElementById('mission-title');
+        const rewardInput = document.getElementById('mission-reward');
+
+        if (!titleInput.value.trim() || !rewardInput.value) {
+            alert('정보를 모두 입력해주세요!');
+            return;
+        }
+
+        const newMission = {
+            id: Date.now(),
+            tag: typeSelect.options[typeSelect.selectedIndex].text.split(' ')[0],
+            title: titleInput.value.trim(),
+            start: new Date().toLocaleDateString(),
+            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 7일 기본
+            progress: 0,
+            reward: parseInt(rewardInput.value)
+        };
+
+        const missions = getMissions();
+        missions.push(newMission);
+        localStorage.setItem('missions', JSON.stringify(missions));
+
+        alert('새로운 챌린지가 등록되었습니다! 🔥');
+        missionForm.reset();
+        switchPage('dashboard');
+        updateDashboard();
+    });
 
     const logoutBtn = document.createElement('button');
     logoutBtn.innerText = '로그아웃';

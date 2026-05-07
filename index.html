@@ -17,13 +17,31 @@
                 <p class="logo-sub">힙하게 자산을 키우는 청소년 마중물</p>
             </div>
             <div class="login-btns">
+                <button id="btn-kakao-login" class="btn-kakao">
+                    <img src="https://developers.kakao.com/assets/img/lib/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png" alt="kakao" width="20">
+                    카카오 계정으로 시작
+                </button>
                 <button id="btn-phone-login" class="btn-phone">
                     <i class="fas fa-mobile-alt"></i> 휴대폰 번호로 시작
                 </button>
             </div>
-            <!-- 배경음악 플레이어 (플레이스홀더) -->
-            <div id="bg-music-player" style="margin-top: 40px; color: #39ff14; font-size: 0.8rem;">
-                <i class="fas fa-music"></i> Now Playing: HipHop_Beat_01.mp3
+            <!-- 배경음악 플레이어 -->
+            <div id="bg-music-player" class="music-player">
+                <div class="music-info">
+                    <i class="fas fa-music"></i> 
+                    <marquee scrollamount="3">Now Playing: HipHop_Beat_01.mp3 (Official Beat)</marquee>
+                </div>
+                <div class="player-controls">
+                    <i class="fas fa-step-backward"></i>
+                    <i class="fas fa-play" id="music-play-toggle"></i>
+                    <i class="fas fa-step-forward"></i>
+                </div>
+                <div class="visualizer">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
             </div>
         </section>
 
@@ -58,9 +76,12 @@
 
             <!-- 복리 계산 자산 카드 -->
             <div class="future-asset-card">
-                <h3>성인이 되었을 때 내 자산은?</h3>
+                <div class="card-title-row">
+                    <h3>성인이 되었을 때 내 자산은?</h3>
+                    <i class="fas fa-info-circle" id="btn-asset-info"></i>
+                </div>
                 <div class="asset-amount">₩ <span id="future-asset-value">2,450,000</span></div>
-                <p class="asset-desc">*현재 포인트 기반 연 5% 복리 시뮬레이션</p>
+                <p class="asset-desc">현재 포인트 기반 연 5% 복리 시뮬레이션</p>
             </div>
 
             <!-- 경제 퀴즈 배너 -->
