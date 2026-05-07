@@ -1,4 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 기초 데이터: 포인트 정책 ---
+    const POINT_POLICY = {
+        PHONE_USAGE: [
+            { hours: 1, points: 1000 },
+            { hours: 2, points: 2000 },
+            { hours: 3, points: 3000 },
+            { hours: 4, points: 5000 },
+            { hours: 5, points: 7000 },
+            { hours: 6, points: 10000 },
+            { hours: 7, points: 15000 },
+            { hours: 8, points: 20000 },
+            { hours: 9, points: 30000 } // 8시간 초과
+        ],
+        ENGLISH_WORDS: [
+            { count: 10, points: 100 },
+            { count: 20, points: 200 },
+            { count: 50, points: 500 },
+            { count: 80, points: 800 },
+            { count: 100, points: 3000 },
+            { count: 150, points: 5000 },
+            { count: 200, points: 10000 },
+            { count: 201, points: 20000 } // 200개 초과
+        ],
+        ECON_QUIZ: [
+            { count: 1, points: 500 },
+            { count: 2, points: 1000 },
+            { count: 3, points: 1500 },
+            { count: 4, points: 2000 }
+        ]
+    };
+
     // --- 데이터 초기화 (localStorage) ---
     if (!localStorage.getItem('users')) {
         const initialUsers = [

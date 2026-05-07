@@ -377,20 +377,122 @@ body {
 
 /* Bottom Nav */
 .bottom-nav {
-    height: 80px;
-    background-color: #000;
+...
+}
+
+/* Economic Quiz Styles */
+.quiz-card {
+    background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+    border: 1px solid var(--neon-green);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    border-top: 1px solid #222;
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.1);
 }
 
-.nav-item {
-    color: #555;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-.nav-item.active {
+.quiz-info h4 {
+    font-size: 1.1rem;
     color: var(--neon-green);
+    margin-bottom: 4px;
+}
+
+.quiz-info p {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.btn-quiz-start {
+    background-color: var(--neon-green);
+    color: black;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.quiz-modal {
+    max-width: 380px !important;
+}
+
+.quiz-badge {
+    background-color: #333;
+    color: var(--neon-purple);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.quiz-q-text {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.option-btn {
+    background-color: #222;
+    border: 1px solid #444;
+    color: white;
+    padding: 14px;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.option-btn:hover {
+    border-color: var(--neon-purple);
+}
+
+.option-btn.selected {
+    background-color: var(--neon-purple);
+    border-color: var(--neon-purple);
+    color: white;
+}
+
+.option-btn.correct {
+    background-color: var(--neon-green) !important;
+    color: black !important;
+    border-color: var(--neon-green) !important;
+}
+
+.option-btn.wrong {
+    background-color: #ff4d4d !important;
+    color: white !important;
+    border-color: #ff4d4d !important;
+}
+
+.quiz-result-msg {
+    margin-bottom: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.quiz-result-msg.correct {
+    color: var(--neon-green);
+    background-color: rgba(57, 255, 20, 0.1);
+}
+
+.quiz-result-msg.wrong {
+    color: #ff4d4d;
+    background-color: rgba(255, 77, 77, 0.1);
 }
