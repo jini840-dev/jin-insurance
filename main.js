@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 모달 요소
     const modalPhone = document.getElementById('modal-phone');
+    const inputNickname = document.getElementById('input-nickname');
     const inputPhone = document.getElementById('input-phone');
 
     // 상태 관리
@@ -62,11 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-phone-login').addEventListener('click', () => {
         modalPhone.classList.remove('hidden');
-        inputPhone.focus();
+        inputNickname.focus();
     });
 
     document.getElementById('btn-modal-close').addEventListener('click', () => {
         modalPhone.classList.add('hidden');
+        inputNickname.value = '';
         inputPhone.value = '';
     });
 
@@ -82,7 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 로그인 및 사용 기록 시작
     document.getElementById('btn-phone-submit').addEventListener('click', () => {
+        const nickVal = inputNickname.value.trim();
         const phoneVal = inputPhone.value.trim();
+
+        if (nickVal.length < 2) {
+            alert('닉네임을 2자 이상 입력해 주세요.');
+            return;
+        }
         if (phoneVal.length < 10) {
             alert('올바른 휴대폰 번호를 입력해 주세요.');
             return;
@@ -90,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let users = JSON.parse(localStorage.getItem('users') || '[]');
         
-        // 1. 사용자 확인 및 자동 등록 (휴대폰 번호 저장)
+        // 1. 사용자 확인 및 자동 등록 (닉네임, 휴대폰 번호 저장)
         let foundUser = users.find(u => u.phone === phoneVal);
 
         if (!foundUser) {
@@ -98,11 +106,15 @@ document.addEventListener('DOMContentLoaded', () => {
             foundUser = {
                 id: 'user_' + Date.now(),
                 phone: phoneVal,
-                nickname: '신규성장크루'
+                nickname: nickVal
             };
             users.push(foundUser);
             localStorage.setItem('users', JSON.stringify(users));
-            console.log(`[Signup] New user registered: ${phoneVal}`);
+            console.log(`[Signup] New user registered: ${nickVal} (${phoneVal})`);
+        } else {
+            // 기존 사용자인 경우 닉네임 업데이트
+            foundUser.nickname = nickVal;
+            localStorage.setItem('users', JSON.stringify(users));
         }
 
         // 2. 로그인 성공 처리
