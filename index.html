@@ -63,6 +63,15 @@
                 <p class="asset-desc">*현재 포인트 기반 연 5% 복리 시뮬레이션</p>
             </div>
 
+            <!-- 경제 퀴즈 배너 -->
+            <div id="quiz-banner" class="quiz-card">
+                <div class="quiz-info">
+                    <h4>오늘의 경제 퀴즈 💡</h4>
+                    <p>정답 맞히고 최대 2,000P 받기!</p>
+                </div>
+                <button id="btn-start-quiz" class="btn-quiz-start">도전하기</button>
+            </div>
+
             <div class="section-title">
                 <h4>진행 중인 미션</h4>
                 <span id="go-admin" class="btn-admin-link">미션 관리(운영자)</span>
@@ -79,6 +88,38 @@
                 <div class="nav-item"><i class="fas fa-user"></i></div>
             </nav>
         </section>
+
+        <!-- 경제 퀴즈 모달 -->
+        <div id="modal-quiz" class="modal hidden">
+            <div class="modal-content quiz-modal">
+                <div id="quiz-container">
+                    <span id="quiz-step" class="quiz-badge">문제 1/4</span>
+                    <h3 id="quiz-question" class="quiz-q-text">물가가 계속 오르는 현상을 무엇이라고 할까요?</h3>
+                    <div id="quiz-options" class="quiz-options">
+                        <!-- 옵션이 JS로 생성됨 -->
+                    </div>
+                    <div id="quiz-result" class="quiz-result-msg hidden"></div>
+                    <div class="modal-btns">
+                        <button id="btn-quiz-close" class="btn-secondary">닫기</button>
+                        <button id="btn-quiz-check" class="btn-primary">정답 확인하기</button>
+                        <button id="btn-quiz-next" class="btn-primary hidden">다음 문제</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 운영자 비밀번호 입력 모달 -->
+        <div id="modal-admin-auth" class="modal hidden">
+            <div class="modal-content">
+                <h3>운영자 인증</h3>
+                <p>관리 페이지 접근을 위해 비밀번호를 입력하세요.</p>
+                <input type="password" id="input-admin-pw" placeholder="비밀번호 4자리" maxlength="4">
+                <div class="modal-btns">
+                    <button id="btn-admin-auth-close" class="btn-secondary">취소</button>
+                    <button id="btn-admin-auth-submit" class="btn-primary">인증하기</button>
+                </div>
+            </div>
+        </div>
 
         <!-- 3. Admin Page -->
         <section id="page-admin" class="page hidden">

@@ -30,6 +30,34 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
+    // --- 경제 퀴즈 문제 데이터 ---
+    const QUIZ_DATA = [
+        {
+            q: "물가가 계속해서 오르고 돈의 가치가 떨어지는 현상을 무엇이라고 할까요?",
+            options: ["인플레이션", "디플레이션", "스태그플레이션", "환율상승"],
+            answer: 0,
+            desc: "인플레이션은 물가가 상승하여 화폐 가치가 하락하는 현상입니다."
+        },
+        {
+            q: "은행에 돈을 맡기거나 빌릴 때 지불하는 '돈의 가격'을 무엇이라고 할까요?",
+            options: ["배당금", "이자", "수수료", "세금"],
+            answer: 1,
+            desc: "이자는 자금을 빌린 대가로 지급하는 비용입니다."
+        },
+        {
+            q: "사람들의 욕구는 무한하지만, 이를 충족할 자원은 한정되어 있는 상태를 무엇이라고 할까요?",
+            options: ["독점성", "대체성", "희소성", "공공성"],
+            answer: 2,
+            desc: "희소성은 자원이 유한하여 선택의 문제가 발생하는 경제의 기본 원리입니다."
+        },
+        {
+            q: "여러 선택지 중 하나를 선택했을 때, 포기한 나머지 중 가치가 가장 큰 것을 무엇이라고 할까요?",
+            options: ["매몰비용", "고정비용", "기회비용", "한계비용"],
+            answer: 2,
+            desc: "기회비용은 어떤 선택으로 인해 포기하게 된 가장 가치 있는 대안입니다."
+        }
+    ];
+
     // --- 데이터 초기화 (localStorage) ---
     if (!localStorage.getItem('users')) {
         const initialUsers = [
@@ -52,46 +80,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputNickname = document.getElementById('input-nickname');
     const inputPhone = document.getElementById('input-phone');
 
+    const modalAdminAuth = document.getElementById('modal-admin-auth');
+    const inputAdminPw = document.getElementById('input-admin-pw');
+
+    const modalQuiz = document.getElementById('modal-quiz');
+
     // 상태 관리
     let currentUser = null;
     let currentUsageId = null;
 
+    let quizState = {
+        currentIdx: 0,
+        score: 0,
+        selectedIdx: null
+    };
+
     let missions = [
-        {
-            id: 1,
-            tag: '공부',
-            title: '매일 영단어 20개 외우기',
-            start: '2026.04.01',
-            end: '2026.04.30',
-            progress: 65,
-            reward: 500
-        },
-        {
-            id: 2,
-            tag: '퀴즈',
-            title: '경제 상식 퀴즈 챌린지',
-            start: '2026.04.15',
-            end: '2026.04.22',
-            progress: 30,
-            reward: 200
-        }
+        { id: 1, tag: '공부', title: '매일 영단어 20개 외우기', start: '2026.04.01', end: '2026.04.30', progress: 65, reward: 500 },
+        { id: 2, tag: '퀴즈', title: '경제 상식 퀴즈 챌린지', start: '2026.04.15', end: '2026.04.22', progress: 30, reward: 200 }
     ];
 
-    // 날짜 포맷팅 함수 (YYYY-MM-DD HH:mm)
     function formatDate(date) {
         const d = new Date(date);
         const pad = (n) => n.toString().padStart(2, '0');
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    // 페이지 전환 함수
     function switchPage(pageId) {
         Object.values(pages).forEach(page => page.classList.add('hidden'));
         pages[pageId].classList.remove('hidden');
     }
 
-    // --- 휴대폰 로그인 로직 ---
-
+    // --- 로그인 로직 ---
     document.getElementById('btn-phone-login').addEventListener('click', () => {
         modalPhone.classList.remove('hidden');
         inputNickname.focus();
@@ -105,78 +125,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     inputPhone.addEventListener('input', (e) => {
         let val = e.target.value.replace(/[^0-9]/g, '');
-        if (val.length > 3 && val.length <= 7) {
-            val = val.slice(0, 3) + '-' + val.slice(3);
-        } else if (val.length > 7) {
-            val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7);
-        }
+        if (val.length > 3 && val.length <= 7) val = val.slice(0, 3) + '-' + val.slice(3);
+        else if (val.length > 7) val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7);
         e.target.value = val;
     });
 
-    // 로그인 및 사용 기록 시작
     document.getElementById('btn-phone-submit').addEventListener('click', () => {
         const nickVal = inputNickname.value.trim();
         const phoneVal = inputPhone.value.trim();
-
-        if (nickVal.length < 2) {
-            alert('닉네임을 2자 이상 입력해 주세요.');
-            return;
-        }
-        if (phoneVal.length < 10) {
-            alert('올바른 휴대폰 번호를 입력해 주세요.');
+        if (nickVal.length < 2 || phoneVal.length < 10) {
+            alert('입력 정보를 다시 확인해 주세요.');
             return;
         }
 
         let users = JSON.parse(localStorage.getItem('users') || '[]');
-        
-        // 1. 사용자 확인 및 자동 등록 (닉네임, 휴대폰 번호 저장)
         let foundUser = users.find(u => u.phone === phoneVal);
 
         if (!foundUser) {
-            // 신규 사용자 등록 및 저장
-            foundUser = {
-                id: 'user_' + Date.now(),
-                phone: phoneVal,
-                nickname: nickVal
-            };
+            foundUser = { id: 'user_' + Date.now(), phone: phoneVal, nickname: nickVal };
             users.push(foundUser);
             localStorage.setItem('users', JSON.stringify(users));
-            console.log(`[Signup] New user registered: ${nickVal} (${phoneVal})`);
         } else {
-            // 기존 사용자인 경우 닉네임 업데이트
             foundUser.nickname = nickVal;
             localStorage.setItem('users', JSON.stringify(users));
         }
 
-        // 2. 로그인 성공 처리
-        currentUser = {
-            ...foundUser,
-            points: 1250, // 기본 포인트
-            age: 16
-        };
-
-        // 3. 휴대폰 사용 정보 기록 (시작)
-        const startTime = formatDate(new Date());
+        currentUser = { ...foundUser, points: 1250, age: 16 };
         currentUsageId = Date.now();
         const usageLog = JSON.parse(localStorage.getItem('usage_logs') || '[]');
-        usageLog.push({
-            usageId: currentUsageId,
-            userId: currentUser.id,
-            phone: currentUser.phone,
-            startTime: startTime,
-            endTime: null
-        });
+        usageLog.push({ usageId: currentUsageId, userId: currentUser.id, phone: currentUser.phone, startTime: formatDate(new Date()), endTime: null });
         localStorage.setItem('usage_logs', JSON.stringify(usageLog));
 
-        // UI 업데이트
         document.getElementById('user-nickname').innerText = `${currentUser.nickname} (#${currentUser.id})`;
         modalPhone.classList.add('hidden');
         updateDashboard();
         switchPage('dashboard');
-        console.log(`[Login] ${currentUser.id} started at ${startTime}`);
     });
 
-    // 로그아웃 및 사용 기록 종료
     function logout() {
         if (currentUsageId) {
             const usageLog = JSON.parse(localStorage.getItem('usage_logs') || '[]');
@@ -184,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index !== -1) {
                 usageLog[index].endTime = formatDate(new Date());
                 localStorage.setItem('usage_logs', JSON.stringify(usageLog));
-                console.log(`[Logout] Recorded end time for ${currentUser.id}`);
             }
         }
         currentUser = null;
@@ -192,63 +176,145 @@ document.addEventListener('DOMContentLoaded', () => {
         switchPage('intro');
     }
 
-    // --- 대시보드 로직 ---
+    // --- 운영자 인증 로직 ---
+    document.getElementById('go-admin').addEventListener('click', () => {
+        modalAdminAuth.classList.remove('hidden');
+        inputAdminPw.focus();
+    });
+
+    document.getElementById('btn-admin-auth-close').addEventListener('click', () => {
+        modalAdminAuth.classList.add('hidden');
+        inputAdminPw.value = '';
+    });
+
+    document.getElementById('btn-admin-auth-submit').addEventListener('click', () => {
+        if (inputAdminPw.value === '0125') {
+            modalAdminAuth.classList.add('hidden');
+            inputAdminPw.value = '';
+            switchPage('admin');
+        } else {
+            alert('비밀번호가 올바르지 않습니다.');
+            inputAdminPw.value = '';
+            inputAdminPw.focus();
+        }
+    });
+
+    // --- 경제 퀴즈 로직 ---
+    document.getElementById('btn-start-quiz').addEventListener('click', () => {
+        quizState = { currentIdx: 0, score: 0, selectedIdx: null };
+        showQuizStep();
+        modalQuiz.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-quiz-close').addEventListener('click', () => {
+        modalQuiz.classList.add('hidden');
+    });
+
+    function showQuizStep() {
+        const qData = QUIZ_DATA[quizState.currentIdx];
+        document.getElementById('quiz-step').innerText = `문제 ${quizState.currentIdx + 1}/${QUIZ_DATA.length}`;
+        document.getElementById('quiz-question').innerText = qData.q;
+        
+        const optionsContainer = document.getElementById('quiz-options');
+        optionsContainer.innerHTML = '';
+        qData.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = `${idx + 1}. ${opt}`;
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                quizState.selectedIdx = idx;
+            });
+            optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById('quiz-result').classList.add('hidden');
+        document.getElementById('btn-quiz-check').classList.remove('hidden');
+        document.getElementById('btn-quiz-next').classList.add('hidden');
+    }
+
+    document.getElementById('btn-quiz-check').addEventListener('click', () => {
+        if (quizState.selectedIdx === null) {
+            alert('답을 선택해 주세요!');
+            return;
+        }
+
+        const qData = QUIZ_DATA[quizState.currentIdx];
+        const isCorrect = quizState.selectedIdx === qData.answer;
+        const resultEl = document.getElementById('quiz-result');
+        
+        if (isCorrect) {
+            quizState.score++;
+            resultEl.innerText = `정답입니다! 👏 ${qData.desc}`;
+            resultEl.className = 'quiz-result-msg correct';
+        } else {
+            resultEl.innerText = `아쉽네요. 정답은 '${qData.options[qData.answer]}'입니다. ${qData.desc}`;
+            resultEl.className = 'quiz-result-msg wrong';
+        }
+
+        resultEl.classList.remove('hidden');
+        document.getElementById('btn-quiz-check').classList.add('hidden');
+        document.getElementById('btn-quiz-next').classList.remove('hidden');
+        
+        if (quizState.currentIdx === QUIZ_DATA.length - 1) {
+            document.getElementById('btn-quiz-next').innerText = '결과 보기';
+        } else {
+            document.getElementById('btn-quiz-next').innerText = '다음 문제';
+        }
+    });
+
+    document.getElementById('btn-quiz-next').addEventListener('click', () => {
+        if (quizState.currentIdx < QUIZ_DATA.length - 1) {
+            quizState.currentIdx++;
+            quizState.selectedIdx = null;
+            showQuizStep();
+        } else {
+            const reward = quizState.score * 500;
+            currentUser.points += reward;
+            alert(`퀴즈 완료! ${quizState.score}문제를 맞혀 ${reward}P를 획득했습니다! 🚀`);
+            modalQuiz.classList.add('hidden');
+            updateDashboard();
+        }
+    });
+
+    // --- 대시보드 및 미션 로직 ---
     function updateDashboard() {
         if (!currentUser) return;
         document.getElementById('user-points').innerText = currentUser.points.toLocaleString();
-        
-        const yearsToAdult = 20 - currentUser.age;
-        const principal = currentUser.points * 1000; 
-        const rate = 0.05;
-        const futureValue = principal * Math.pow((1 + rate), yearsToAdult);
-        
+        const futureValue = (currentUser.points * 1000) * Math.pow(1.05, 20 - currentUser.age);
         document.getElementById('future-asset-value').innerText = Math.floor(futureValue).toLocaleString();
-        
         renderMissions();
     }
 
     function renderMissions() {
         const container = document.getElementById('mission-container');
         container.innerHTML = '';
-
         missions.forEach(m => {
             const card = document.createElement('div');
             card.className = 'mission-card';
             card.innerHTML = `
-                <div class="mission-top">
-                    <span class="mission-tag">${m.tag}</span>
-                    <span class="mission-period">${m.start} ~ ${m.end}</span>
-                </div>
+                <div class="mission-top"><span class="mission-tag">${m.tag}</span><span class="mission-period">${m.start} ~ ${m.end}</span></div>
                 <div class="mission-title">${m.title}</div>
-                <div class="progress-container">
-                    <div class="progress-fill" style="width: ${m.progress}%"></div>
-                </div>
-                <div class="mission-footer">
-                    <span>성공률 ${m.progress}%</span>
-                    <span class="reward-points">+${m.reward}P 예정</span>
-                </div>
+                <div class="progress-container"><div class="progress-fill" style="width: ${m.progress}%"></div></div>
+                <div class="mission-footer"><span>성공률 ${m.progress}%</span><span class="reward-points">+${m.reward}P 예정</span></div>
             `;
             container.appendChild(card);
         });
     }
 
-    // 관리자/로그아웃 버튼 이벤트
-    document.getElementById('go-admin').addEventListener('click', () => switchPage('admin'));
     document.getElementById('btn-admin-back').addEventListener('click', () => switchPage('dashboard'));
     
-    // 로그아웃 버튼 (HTML에 추가 필요)
     const logoutBtn = document.createElement('button');
     logoutBtn.innerText = '로그아웃';
-    logoutBtn.className = 'btn-logout'; // 스타일 필요
-    logoutBtn.style.cssText = 'margin-top: 20px; background: #333; color: #fff; border: none; padding: 10px; border-radius: 8px; width: 100%;';
+    logoutBtn.style.cssText = 'margin-top: 20px; background: #333; color: #fff; border: none; padding: 15px; border-radius: 12px; width: 100%; cursor: pointer; font-weight: 700;';
     logoutBtn.addEventListener('click', logout);
     pages.dashboard.appendChild(logoutBtn);
 
-    // 미션 등록 로직
     document.getElementById('mission-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const typeSelect = document.getElementById('mission-type');
-        const newMission = {
+        missions.unshift({
             id: Date.now(),
             tag: typeSelect.options[typeSelect.selectedIndex].text.split(' ')[0],
             title: document.getElementById('mission-title').value,
@@ -256,10 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
             end: '미정',
             progress: 0,
             reward: parseInt(document.getElementById('mission-reward').value)
-        };
-
-        missions.unshift(newMission);
-        alert('새로운 성장의 기회가 등록되었습니다! 🚀');
+        });
+        alert('미션이 등록되었습니다! 🚀');
         updateDashboard();
         switchPage('dashboard');
         e.target.reset();
