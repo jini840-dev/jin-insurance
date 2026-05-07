@@ -82,21 +82,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 로그인 및 사용 기록 시작
     document.getElementById('btn-phone-submit').addEventListener('click', () => {
-        const phoneVal = inputPhone.value;
-        const users = JSON.parse(localStorage.getItem('users'));
+        const phoneVal = inputPhone.value.trim();
+        if (phoneVal.length < 10) {
+            alert('올바른 휴대폰 번호를 입력해 주세요.');
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
         
-        // 1. 사용자 확인
-        const foundUser = users.find(u => u.phone === phoneVal);
+        // 1. 사용자 확인 및 자동 등록 (휴대폰 번호 저장)
+        let foundUser = users.find(u => u.phone === phoneVal);
 
         if (!foundUser) {
-            alert('등록되지 않은 사용자입니다. 관리자에게 문의하세요.');
-            return;
+            // 신규 사용자 등록 및 저장
+            foundUser = {
+                id: 'user_' + Date.now(),
+                phone: phoneVal,
+                nickname: '신규성장크루'
+            };
+            users.push(foundUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            console.log(`[Signup] New user registered: ${phoneVal}`);
         }
 
         // 2. 로그인 성공 처리
         currentUser = {
             ...foundUser,
-            points: 1250, // 기본 포인트 (실제로는 유저 DB에서 가져와야 함)
+            points: 1250, // 기본 포인트
             age: 16
         };
 
@@ -210,4 +222,3 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.reset();
     });
 });
-
