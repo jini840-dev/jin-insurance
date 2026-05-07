@@ -1,3 +1,21 @@
+// --- Firebase SDK 및 초기화 ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+// TODO: Firebase 콘솔에서 발급받은 실제 Config 값으로 교체하세요.
+const firebaseConfig = {
+    apiKey: "AIzaSyB-VooJveCkmf8pe_tBj64rgFD_K9MzfRU",
+    authDomain: "jin-growth.firebaseapp.com",
+    projectId: "jin-growth",
+    storageBucket: "jin-growth.firebasestorage.app",
+    messagingSenderId: "27010798564",
+    appId: "1:27010798564:web:7a3d6cb7729c3237372df1",
+    measurementId: "G-1NDJ1FP1QC"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- 기초 데이터: 포인트 정책 ---
     const POINT_POLICY = {
@@ -48,24 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
-    // --- 데이터 초기화 (localStorage) ---
-    if (!localStorage.getItem('users')) {
-        const initialUsers = [
-            { id: 'jin_01', phone: '010-1234-5678', nickname: '지니', points: 1250 },
-            { id: 'growth_expert', phone: '010-9876-5432', nickname: '성장전문가', points: 5000 }
-        ];
-        localStorage.setItem('users', JSON.stringify(initialUsers));
-    }
-
-    if (!localStorage.getItem('missions')) {
-        const initialMissions = [
-            { id: 1, tag: '공부', title: '매일 영단어 20개 외우기', start: '2026.05.01', end: '2026.05.31', progress: 65, reward: 500 },
-            { id: 2, tag: '퀴즈', title: '경제 상식 퀴즈 챌린지', start: '2026.05.05', end: '2026.05.12', progress: 30, reward: 200 },
-            { id: 3, tag: '효도', title: '부모님 안마해드리기', start: '2026.05.07', end: '2026.05.14', progress: 0, reward: 1000 }
-        ];
-        localStorage.setItem('missions', JSON.stringify(initialMissions));
-    }
-
     // 페이지 요소
     const pages = {
         intro: document.getElementById('page-intro'),
@@ -91,14 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 상태 관리
     let currentUser = null;
-    let currentUsageId = null;
     let currentQuizIdx = 0;
     let correctAnswersCount = 0;
     let selectedOptionIdx = null;
-
-    function getMissions() {
-        return JSON.parse(localStorage.getItem('missions') || '[]');
-    }
 
     function formatDate(date) {
         const d = new Date(date);
@@ -112,12 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 로그인 로직 ---
-    document.getElementById('btn-kakao-login').addEventListener('click', () => {
-        // 카카오 자동 로그인 시뮬레이션
-        alert('카카오 계정으로 자동 로그인합니다... ⚡️');
-        loginUser('010-0000-0000', '카카오크루');
-    });
-
     document.getElementById('btn-phone-login').addEventListener('click', () => { modalPhone.classList.remove('hidden'); inputNickname.focus(); });
     document.getElementById('btn-modal-close').addEventListener('click', () => { modalPhone.classList.add('hidden'); inputNickname.value = ''; inputPhone.value = ''; });
 
@@ -135,28 +124,40 @@ document.addEventListener('DOMContentLoaded', () => {
         loginUser(phoneVal, nickVal);
     });
 
-    function loginUser(phone, nickname) {
-        let users = JSON.parse(localStorage.getItem('users') || '[]');
-        let foundUser = users.find(u => u.phone === phone);
-        if (!foundUser) {
-            foundUser = { id: 'user_' + Date.now(), phone: phone, nickname: nickname, points: 1250 };
-            users.push(foundUser);
-        } else {
-            foundUser.nickname = nickname;
+    async function loginUser(phone, nickname) {
+        try {
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("phone", "==", phone));
+            const querySnapshot = await getDocs(q);
+
+            let foundUser = null;
+            if (querySnapshot.empty) {
+                // 1. 신규 유저: 최초 1회 정보를 저장(Create)
+                const newUser = { 
+                    phone, 
+                    nickname, 
+                    points: 1250, 
+                    createdAt: new Date() 
+                };
+                const docRef = await addDoc(usersRef, newUser);
+                foundUser = { id: docRef.id, ...newUser };
+                console.log("신규 유저 등록 완료:", phone);
+            } else {
+                // 2. 기존 유저: 동일 휴대폰 번호가 있으면 저장하지 않고 기존 정보 로드(Read)
+                const userDoc = querySnapshot.docs[0];
+                foundUser = { id: userDoc.id, ...userDoc.data() };
+                console.log("기존 유저 로그인:", foundUser.nickname);
+            }
+            
+            currentUser = { ...foundUser, age: 16 };
+            document.getElementById('user-nickname').innerText = `${currentUser.nickname} (#${currentUser.id.substring(0, 6)})`;
+            if (modalPhone) modalPhone.classList.add('hidden');
+            updateDashboard();
+            switchPage('dashboard');
+        } catch (error) {
+            console.error("로그인 실패:", error);
+            alert("서버 연결에 실패했습니다. Firebase Config 설정을 확인해주세요.");
         }
-        localStorage.setItem('users', JSON.stringify(users));
-        currentUser = { ...foundUser, age: 16 };
-
-        const startTime = formatDate(new Date());
-        currentUsageId = Date.now();
-        const usageLog = JSON.parse(localStorage.getItem('usage_logs') || '[]');
-        usageLog.push({ usageId: currentUsageId, userId: currentUser.id, phone: currentUser.phone, startTime, endTime: null });
-        localStorage.setItem('usage_logs', JSON.stringify(usageLog));
-
-        document.getElementById('user-nickname').innerText = `${currentUser.nickname} (#${currentUser.id})`;
-        if (modalPhone) modalPhone.classList.add('hidden');
-        updateDashboard();
-        switchPage('dashboard');
     }
 
     // --- 음악 플레이어 로직 ---
@@ -171,11 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 경제 퀴즈 로직 ---
     document.getElementById('btn-start-quiz').addEventListener('click', () => {
-        const today = new Date().toDateString();
-        if (localStorage.getItem(`last_quiz_${currentUser.id}`) === today) {
-            alert('오늘의 퀴즈를 이미 완료했습니다! 내일 다시 도전하세요. 🔥');
-            return;
-        }
         currentQuizIdx = 0; correctAnswersCount = 0;
         showQuiz(currentQuizIdx);
         modalQuiz.classList.remove('hidden');
@@ -216,20 +212,22 @@ document.addEventListener('DOMContentLoaded', () => {
         btnQuizNext.innerText = currentQuizIdx === QUIZ_DATA.length - 1 ? "결과 확인" : "다음 문제";
     };
 
-    btnQuizNext.onclick = () => {
+    btnQuizNext.onclick = async () => {
         if (currentQuizIdx < QUIZ_DATA.length - 1) {
             currentQuizIdx++; showQuiz(currentQuizIdx);
         } else {
             const reward = correctAnswersCount * 500;
             currentUser.points += reward;
-            let users = JSON.parse(localStorage.getItem('users'));
-            const uIdx = users.findIndex(u => u.id === currentUser.id);
-            users[uIdx].points = currentUser.points;
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem(`last_quiz_${currentUser.id}`, new Date().toDateString());
-            alert(`퀴즈 완료! ${correctAnswersCount}문제를 맞혀 ${reward}P를 획득했습니다! 🚀`);
-            modalQuiz.classList.add('hidden');
-            updateDashboard();
+            
+            try {
+                await updateDoc(doc(db, "users", currentUser.id), { points: currentUser.points });
+                alert(`퀴즈 완료! ${correctAnswersCount}문제를 맞혀 ${reward}P를 획득했습니다! 🚀`);
+                modalQuiz.classList.add('hidden');
+                updateDashboard();
+            } catch (error) {
+                console.error("포인트 업데이트 실패:", error);
+                alert("데이터 저장에 실패했습니다.");
+            }
         }
     };
     document.getElementById('btn-quiz-close').onclick = () => modalQuiz.classList.add('hidden');
@@ -257,26 +255,87 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMissions();
     }
 
-    function renderMissions() {
+    async function renderMissions() {
         const container = document.getElementById('mission-container');
-        container.innerHTML = '';
-        const missions = getMissions();
-        missions.forEach(m => {
-            const card = document.createElement('div');
-            card.className = 'mission-card';
-            card.innerHTML = `
-                <div class="mission-top"><span class="mission-tag">${m.tag}</span><span class="mission-period">${m.start} ~ ${m.end}</span></div>
-                <div class="mission-title">${m.title}</div>
-                <div class="progress-container"><div class="progress-fill" style="width: ${m.progress}%"></div></div>
-                <div class="mission-footer"><span>성공률 ${m.progress}%</span><span class="reward-points">+${m.reward.toLocaleString()}P 예정</span></div>
-            `;
-            container.appendChild(card);
-        });
+        container.innerHTML = '<p style="text-align:center; color:var(--text-gray);">미션 불러오는 중...</p>';
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, "missions"));
+            // 사용자의 참여 미션 정보 가져오기 (없으면 빈 객체)
+            const userMissions = currentUser.participatingMissions || {};
+            
+            container.innerHTML = '';
+            querySnapshot.forEach((docSnap) => {
+                const m = docSnap.data();
+                const mId = docSnap.id;
+                const isParticipating = !!userMissions[mId];
+                const currentProgress = isParticipating ? userMissions[mId].progress : 0;
+
+                const card = document.createElement('div');
+                card.className = `mission-card ${isParticipating ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="mission-top">
+                        <span class="mission-tag">${m.tag}</span>
+                        <span class="mission-period">${m.start} ~ ${m.end}</span>
+                    </div>
+                    <div class="mission-title">${m.title}</div>
+                    <div class="progress-container">
+                        <div class="progress-fill" style="width: ${isParticipating ? currentProgress : m.progress}%"></div>
+                    </div>
+                    <div class="mission-footer">
+                        <span>${isParticipating ? '나의 성공률 ' + currentProgress + '%' : '예상 성공률 ' + m.progress + '%'}</span>
+                        <span class="reward-points">+${m.reward.toLocaleString()}P 예정</span>
+                    </div>
+                    <div class="mission-action">
+                        ${isParticipating 
+                            ? `<button class="btn-mission-status" disabled>진행 중 🔥</button>`
+                            : `<button class="btn-mission-join" data-id="${mId}">참여하기</button>`
+                        }
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // 참여하기 버튼 이벤트 바인딩
+            document.querySelectorAll('.btn-mission-join').forEach(btn => {
+                btn.onclick = async (e) => {
+                    const mId = e.target.getAttribute('data-id');
+                    await joinMission(mId);
+                };
+            });
+
+        } catch (error) {
+            console.error("미션 로드 실패:", error);
+            container.innerHTML = '<p style="text-align:center; color:#ff4d4d;">미션을 불러오지 못했습니다.</p>';
+        }
+    }
+
+    async function joinMission(missionId) {
+        if (!currentUser) return;
+        
+        try {
+            // participatingMissions 객체에 미션 ID 추가
+            const updatedParticipating = {
+                ...(currentUser.participatingMissions || {}),
+                [missionId]: { progress: 10, joinedAt: new Date() } // 시작 시 10% 기본 부여
+            };
+
+            await updateDoc(doc(db, "users", currentUser.id), {
+                participatingMissions: updatedParticipating
+            });
+
+            currentUser.participatingMissions = updatedParticipating;
+            alert('챌린지에 참여했습니다! 성장을 시작해볼까요? 🚀');
+            renderMissions();
+        } catch (error) {
+            console.error("미션 참여 실패:", error);
+            alert("미션 참여에 실패했습니다.");
+        }
     }
 
     // --- 미션 등록 (운영자) ---
     const missionForm = document.getElementById('mission-form');
-    missionForm.addEventListener('submit', (e) => {
+    missionForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const typeSelect = document.getElementById('mission-type');
         const titleInput = document.getElementById('mission-title');
@@ -288,28 +347,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const newMission = {
-            id: Date.now(),
             tag: typeSelect.options[typeSelect.selectedIndex].text.split(' ')[0],
             title: titleInput.value.trim(),
             start: new Date().toLocaleDateString(),
-            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 7일 기본
+            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
             progress: 0,
-            reward: parseInt(rewardInput.value)
+            reward: parseInt(rewardInput.value),
+            createdAt: new Date()
         };
 
-        const missions = getMissions();
-        missions.push(newMission);
-        localStorage.setItem('missions', JSON.stringify(missions));
-
-        alert('새로운 챌린지가 등록되었습니다! 🔥');
-        missionForm.reset();
-        switchPage('dashboard');
-        updateDashboard();
+        try {
+            await addDoc(collection(db, "missions"), newMission);
+            alert('새로운 챌린지가 Firebase에 등록되었습니다! 🔥');
+            missionForm.reset();
+            switchPage('dashboard');
+            updateDashboard();
+        } catch (error) {
+            console.error("미션 등록 실패:", error);
+            alert("미션 등록에 실패했습니다.");
+        }
     });
 
     const logoutBtn = document.createElement('button');
     logoutBtn.innerText = '로그아웃';
     logoutBtn.style.cssText = 'margin-top: 20px; background: #333; color: #fff; border: none; padding: 15px; border-radius: 12px; width: 100%; cursor: pointer; font-weight: 700;';
-    logoutBtn.onclick = () => { currentUser = null; currentUsageId = null; switchPage('intro'); };
+    logoutBtn.onclick = () => { currentUser = null; switchPage('intro'); };
     pages.dashboard.appendChild(logoutBtn);
 });

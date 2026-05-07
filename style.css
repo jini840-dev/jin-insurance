@@ -91,28 +91,6 @@ body {
     gap: 12px;
 }
 
-.btn-kakao {
-    background-color: #FEE500;
-    color: #3C1E1E;
-    border: none;
-    padding: 18px;
-    border-radius: 16px;
-    font-weight: 800;
-    font-size: 1.1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 4px 0 #D9C200;
-    transition: transform 0.1s;
-}
-
-.btn-kakao:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #D9C200;
-}
-
 .btn-phone {
     background-color: var(--neon-green);
     color: black;
@@ -444,6 +422,42 @@ body {
 .reward-points {
     color: var(--neon-purple);
     font-weight: 700;
+}
+
+.mission-card.active {
+    border-color: var(--neon-purple);
+    background-color: rgba(188, 19, 254, 0.05);
+}
+
+.mission-action {
+    margin-top: 15px;
+}
+
+.btn-mission-join {
+    width: 100%;
+    background-color: var(--neon-green);
+    color: black;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-mission-join:hover {
+    opacity: 0.9;
+}
+
+.btn-mission-status {
+    width: 100%;
+    background-color: #333;
+    color: var(--neon-purple);
+    border: 1px solid var(--neon-purple);
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: default;
 }
 
 /* 3. Admin Page */
