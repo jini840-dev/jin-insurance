@@ -123,7 +123,8 @@ function switchPage(pageId) {
 async function updateDashboard() {
     if (!currentUser) return;
     getEl('user-points').innerText = (currentUser.points || 0).toLocaleString();
-    const futureValue = (currentUser.points * 1000) * Math.pow(1.05, 20 - (currentUser.age || 16));
+    // 1P = 1원 기준으로 복리 계산
+    const futureValue = (currentUser.points * 1) * Math.pow(1.05, 20 - (currentUser.age || 16));
     getEl('future-asset-value').innerText = Math.floor(futureValue).toLocaleString();
     await renderMissions();
 }
@@ -257,7 +258,21 @@ async function init() {
     if (btnPhoneLogin) {
         btnPhoneLogin.onclick = () => {
             getEl('modal-phone').classList.remove('hidden');
-            getEl('input-nickname').focus();
+            // 렌더링 및 브라우저 기본 동작을 고려하여 포커스 강제 전환
+            setTimeout(() => {
+                const phoneInput = getEl('input-phone');
+                const nickInput = getEl('input-nickname');
+                
+                // 닉네임 칸의 포커스를 확실히 해제
+                if (nickInput) nickInput.blur();
+                
+                if (phoneInput) {
+                    phoneInput.focus();
+                    // 커서를 마지막으로 이동
+                    const len = phoneInput.value.length;
+                    phoneInput.setSelectionRange(len, len);
+                }
+            }, 100);
         };
     }
 
@@ -312,6 +327,14 @@ async function init() {
         getEl('modal-quiz').classList.remove('hidden');
     };
 
+    // 미션 가져오기 버튼
+    getEl('btn-get-mission').onclick = async () => {
+        await renderMissionPool();
+        getEl('modal-mission-pool').classList.remove('hidden');
+    };
+
+    getEl('btn-pool-close').onclick = () => getEl('modal-mission-pool').classList.add('hidden');
+
     getEl('go-admin').onclick = () => {
         getEl('modal-admin-auth').classList.remove('hidden');
         getEl('input-admin-pw').focus();
@@ -329,7 +352,7 @@ async function init() {
     };
 
     getEl('btn-admin-back').onclick = () => switchPage('dashboard');
-    getEl('btn-asset-info').onclick = () => alert('현재 보유하신 포인트(1P = 1,000원 환산)를 기반으로, 연 5% 복리 수익률을 적용하여 만 20세 성인이 되었을 때의 예상 자산을 계산한 결과입니다. 🚀');
+    getEl('btn-asset-info').onclick = () => alert('현재 보유하신 자산(1P = 1원)을 기반으로, 한화생명의 연 5% 복리 수익률을 적용하여 성인이 되었을 때의 가치를 계산했습니다. 이 자산은 향후 한화생명 보험료 납입으로도 활용하실 수 있습니다! 🧡');
 
     const logoutBtn = document.createElement('button');
     logoutBtn.innerText = '로그아웃';
@@ -380,6 +403,57 @@ async function init() {
                 alert("등록 실패");
             }
         };
+    }
+}
+
+// 미션 풀(Pool) 렌더링
+async function renderMissionPool() {
+    const container = getEl('mission-pool-container');
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align:center; color:var(--text-gray);">미션 탐색 중...</p>';
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "missions"));
+        const userMissions = currentUser.participatingMissions || {};
+        
+        container.innerHTML = '';
+        let hasAvailable = false;
+
+        querySnapshot.forEach((docSnap) => {
+            const m = docSnap.data();
+            const mId = docSnap.id;
+            
+            // 이미 참여 중인 미션은 제외
+            if (userMissions[mId]) return;
+
+            hasAvailable = true;
+            const item = document.createElement('div');
+            item.className = 'pool-item';
+            item.innerHTML = `
+                <div class="pool-item-info">
+                    <h5>${m.title}</h5>
+                    <p>+${m.reward.toLocaleString()}P</p>
+                </div>
+                <button class="btn-pool-join" data-id="${mId}">가져오기</button>
+            `;
+            container.appendChild(item);
+        });
+
+        if (!hasAvailable) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-gray);">도전 가능한 새 미션이 없습니다.</p>';
+        }
+
+        document.querySelectorAll('.btn-pool-join').forEach(btn => {
+            btn.onclick = async (e) => {
+                const id = e.target.getAttribute('data-id');
+                await joinMission(id);
+                await renderMissionPool(); // 풀 리스트 갱신
+            };
+        });
+    } catch (error) {
+        console.error("Pool load error:", error);
+        container.innerHTML = '<p style="text-align:center; color:#ff4d4d;">미션을 가져오지 못했습니다.</p>';
     }
 }
 
