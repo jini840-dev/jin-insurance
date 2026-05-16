@@ -495,10 +495,18 @@ async function init() {
     };
 
     // 미션 가져오기 버튼
-    getEl('btn-get-mission').onclick = async () => {
-        await renderMissionPool();
-        getEl('modal-mission-pool').classList.remove('hidden');
-    };
+    const btnGetMission = getEl('btn-get-mission');
+    if (btnGetMission) {
+        btnGetMission.onclick = async () => {
+            console.log("미션 가져오기 버튼 클릭됨");
+            if (!currentUser) {
+                alert("로그인이 필요합니다.");
+                return;
+            }
+            await renderMissionPool();
+            getEl('modal-mission-pool').classList.remove('hidden');
+        };
+    }
 
     getEl('btn-pool-close').onclick = () => getEl('modal-mission-pool').classList.add('hidden');
 
@@ -520,21 +528,6 @@ async function init() {
 
     getEl('btn-admin-back').onclick = () => switchPage('dashboard');
     getEl('btn-asset-info').onclick = () => alert('현재 보유하신 자산(1P = 1원)을 기반으로, 한화생명의 연 5% 복리 수익률을 적용하여 성인이 되었을 때의 가치를 계산했습니다. 이 자산은 향후 한화생명 보험료 납입으로도 활용하실 수 있습니다! 🧡');
-
-    const logoutBtn = document.createElement('button');
-    logoutBtn.innerText = '로그아웃';
-    logoutBtn.style.cssText = 'margin-top: 20px; background: #333; color: #fff; border: none; padding: 15px; border-radius: 12px; width: 100%; cursor: pointer; font-weight: 700;';
-    logoutBtn.onclick = () => { 
-        currentUser = null; 
-        // 로그아웃 시 입력 필드 초기화
-        if (getEl('input-phone')) getEl('input-phone').value = "";
-        if (getEl('input-nickname')) {
-            getEl('input-nickname').value = "";
-            getEl('input-nickname').style.borderColor = "var(--border-color)";
-        }
-        switchPage('intro'); 
-    };
-    getEl('page-dashboard').appendChild(logoutBtn);
 
     const missionForm = getEl('mission-form');
     if (missionForm) {
@@ -597,10 +590,11 @@ async function renderMissionPool() {
             hasAvailable = true;
             const item = document.createElement('div');
             item.className = 'pool-item';
+            const rewardText = m.reward ? m.reward.toLocaleString() : '0';
             item.innerHTML = `
                 <div class="pool-item-info">
-                    <h5>${m.title}</h5>
-                    <p>+${m.reward.toLocaleString()}P</p>
+                    <h5>${m.title || '제목 없음'}</h5>
+                    <p>+${rewardText}P</p>
                 </div>
                 <button class="btn-pool-join" data-id="${mId}">가져오기</button>
             `;
