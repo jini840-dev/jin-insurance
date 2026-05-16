@@ -15,8 +15,27 @@
     color: var(--hanwha-orange);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     margin-bottom: 5px;
+}
+
+/* 한화 서클 CI 스타일 */
+.hanwha-ci {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.hanwha-ci span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--hanwha-orange);
+    display: inline-block;
+}
+
+.hanwha-ci span:nth-child(2) {
+    margin-top: -4px; /* 살짝 위로 배치하여 한화 로고 느낌 구현 */
 }
 
 .brand-label i {
