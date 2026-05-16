@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.googleusercontent.com https://*.firebasestorage.app; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; frame-src 'self' https://*.firebaseapp.com;">
     <title>JIN-Growth | 힙한 성장의 시작</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap" rel="stylesheet">
@@ -92,11 +93,46 @@
 
             <div class="section-title">
                 <h4>진행 중인 미션</h4>
-                <span id="go-admin" class="btn-admin-link">미션 관리(운영자)</span>
+                <div class="title-actions">
+                    <button id="btn-get-mission" class="btn-icon-action">
+                        <i class="fas fa-download"></i> 미션 가져오기
+                    </button>
+                    <span id="go-admin" class="btn-admin-link">미션 관리(운영자)</span>
+                </div>
             </div>
 
             <div id="mission-container" class="mission-list">
                 <!-- 미션 카드가 JS를 통해 동적으로 생성됩니다 -->
+            </div>
+
+            <!-- 미션 풀(Pool) 모달 -->
+            <div id="modal-mission-pool" class="modal hidden">
+                <div class="modal-content pool-modal">
+                    <h3>미션 가져오기</h3>
+                    <p>부모님이 등록하신 미션 중 도전하고 싶은 미션을 선택하세요.</p>
+                    <div id="mission-pool-container" class="pool-list">
+                        <!-- 미션 목록이 JS로 생성됨 -->
+                    </div>
+                    <div class="modal-btns">
+                        <button id="btn-pool-close" class="btn-secondary">닫기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 공부 타이머 모달 -->
+            <div id="modal-study-timer" class="modal hidden">
+                <div class="modal-content timer-modal">
+                    <div class="timer-header">
+                        <i class="fas fa-book-reader"></i>
+                        <h3>공부 집중 챌린지</h3>
+                    </div>
+                    <div id="timer-display" class="timer-clock">00:00:00</div>
+                    <p class="timer-hint">휴대폰을 멀리할수록 자산이 쌓입니다. 🔥</p>
+                    <div id="timer-status-msg" class="timer-status hidden">집중 모드 가동 중...</div>
+                    <div class="modal-btns">
+                        <button id="btn-timer-stop" class="btn-primary">미션 종료 및 포인트 받기</button>
+                    </div>
+                </div>
             </div>
 
             <nav class="bottom-nav">

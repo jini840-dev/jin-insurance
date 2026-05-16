@@ -554,24 +554,157 @@ body {
     opacity: 0.9;
 }
 
-.btn-mission-status {
+/* Mission Card States */
+.mission-card.completed {
+    border-color: var(--neon-green);
+    background-color: rgba(57, 255, 20, 0.05);
+}
+
+.btn-mission-done {
     width: 100%;
-    background-color: #333;
-    color: var(--neon-purple);
-    border: 1px solid var(--neon-purple);
+    background-color: rgba(57, 255, 20, 0.2);
+    color: var(--neon-green);
+    border: 1px solid var(--neon-green);
     padding: 10px;
     border-radius: 10px;
     font-weight: 800;
     cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-/* 3. Admin Page */
-.admin-header {
+/* Upload UI */
+.upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-file-hidden {
+    display: none;
+}
+
+.btn-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #333;
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 1px dashed #555;
+    transition: all 0.2s;
+}
+
+.btn-upload-label:hover {
+    background-color: #444;
+    border-color: var(--neon-purple);
+}
+
+.btn-upload-label.success {
+    background-color: rgba(57, 255, 20, 0.1);
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+}
+
+.btn-mission-complete-action {
+    width: 100%;
+    background-color: #222;
+    color: #555;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: default;
+    transition: all 0.3s;
+}
+
+.btn-mission-complete-action.ready {
+    background-color: var(--neon-purple);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(188, 19, 254, 0.3);
+}
+
+.btn-mission-complete-action.ready:active {
+    transform: translateY(2px);
+}
+
+/* Study Timer Styling */
+.timer-modal {
+    background: linear-gradient(180deg, #0f172a 0%, #000000 100%);
+    border: 2px solid var(--neon-purple);
+}
+
+.timer-header {
     margin-bottom: 30px;
 }
 
-.form-group {
-    margin-bottom: 20px;
+.timer-header i {
+    font-size: 3rem;
+    color: var(--neon-purple);
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px rgba(188, 19, 254, 0.5);
+}
+
+.timer-clock {
+    font-size: 4rem;
+    font-weight: 900;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--neon-green);
+    letter-spacing: 2px;
+    margin: 20px 0;
+    text-shadow: 0 0 20px rgba(57, 255, 20, 0.4);
+}
+
+.timer-hint {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin-bottom: 25px;
+}
+
+.timer-status {
+    background: rgba(188, 19, 254, 0.1);
+    color: var(--neon-purple);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 30px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.btn-mission-join-study {
+    width: 100%;
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink));
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(188, 19, 254, 0.3);
+}
+
+.btn-mission-join-study:hover {
+    transform: scale(1.02);
+}
+
+/* Bottom Nav */
+.bottom-nav {
 }
 
 .form-group label {
@@ -610,6 +743,73 @@ body {
     border: none;
     cursor: pointer;
     text-decoration: underline;
+}
+
+/* Study Timer Styling */
+.timer-modal {
+    background: linear-gradient(180deg, #0f172a 0%, #000000 100%);
+    border: 2px solid var(--neon-purple);
+}
+
+.timer-header {
+    margin-bottom: 30px;
+}
+
+.timer-header i {
+    font-size: 3rem;
+    color: var(--neon-purple);
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px rgba(188, 19, 254, 0.5);
+}
+
+.timer-clock {
+    font-size: 4rem;
+    font-weight: 900;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--neon-green);
+    letter-spacing: 2px;
+    margin: 20px 0;
+    text-shadow: 0 0 20px rgba(57, 255, 20, 0.4);
+}
+
+.timer-hint {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin-bottom: 25px;
+}
+
+.timer-status {
+    background: rgba(188, 19, 254, 0.1);
+    color: var(--neon-purple);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 30px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.btn-mission-join-study {
+    width: 100%;
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink));
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(188, 19, 254, 0.3);
+}
+
+.btn-mission-join-study:hover {
+    transform: scale(1.02);
 }
 
 /* Bottom Nav */

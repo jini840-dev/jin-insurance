@@ -1,6 +1,7 @@
 // --- Firebase SDK 및 초기화 ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
 
 // Firebase 설정
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 
 // 전역 변수 설정
 let db;
+let storage;
 let app;
 let currentUser = null;
 let QUIZ_DATA = []; // Firestore에서 로드할 예정
@@ -23,6 +25,7 @@ let MISSION_STANDARDS = {}; // Firestore에서 로드할 예정
 try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+    storage = getStorage(app);
     console.log("Firebase initialized successfully.");
 } catch (error) {
     console.error("Firebase initialization failed:", error);
@@ -149,10 +152,18 @@ async function renderMissions() {
             const m = docSnap.data();
             const mId = docSnap.id;
             const isParticipating = !!userMissions[mId];
-            const currentProgress = isParticipating ? userMissions[mId].progress : 0;
+            
+            // 대시보드에서는 참여 중인 미션만 표시
+            if (!isParticipating) return;
+
+            const missionData = userMissions[mId];
+            const currentProgress = missionData.progress || 0;
+            const isCompleted = currentProgress >= 100;
+            const isFamilyMission = m.tag && m.tag.includes('효도');
+            const isStudyMission = m.tag && m.tag.includes('공부');
 
             const card = document.createElement('div');
-            card.className = `mission-card ${isParticipating ? 'active' : ''}`;
+            card.className = `mission-card ${isCompleted ? 'completed' : 'active'}`;
             card.innerHTML = `
                 <div class="mission-top">
                     <span class="mission-tag">${m.tag || '챌린지'}</span>
@@ -160,31 +171,166 @@ async function renderMissions() {
                 </div>
                 <div class="mission-title">${m.title || '제목 없음'}</div>
                 <div class="progress-container">
-                    <div class="progress-fill" style="width: ${isParticipating ? currentProgress : (m.progress || 0)}%"></div>
+                    <div class="progress-fill" style="width: ${currentProgress}%"></div>
                 </div>
                 <div class="mission-footer">
-                    <span>${isParticipating ? '나의 성공률 ' + currentProgress + '%' : '예상 성공률 ' + (m.progress || 0) + '%'}</span>
+                    <span>${isCompleted ? '달성 완료! 🎉' : '나의 성공률 ' + currentProgress + '%'}</span>
                     <span class="reward-points">+${(m.reward || 0).toLocaleString()}P 예정</span>
                 </div>
                 <div class="mission-action">
-                    ${isParticipating 
-                        ? `<button class="btn-mission-status" disabled>진행 중 🔥</button>`
-                        : `<button class="btn-mission-join" data-id="${mId}">참여하기</button>`
+                    ${isCompleted 
+                        ? `<button class="btn-mission-done" disabled><i class="fas fa-check-circle"></i> 미션 완료</button>`
+                        : isStudyMission
+                            ? `<button class="btn-mission-join-study" data-id="${mId}">타이머 시작하기 🔥</button>`
+                            : isFamilyMission 
+                                ? `
+                                    <div class="upload-area">
+                                        <input type="file" id="file-${mId}" class="input-file-hidden" accept="image/*">
+                                        <label for="file-${mId}" class="btn-upload-label" id="label-${mId}">
+                                            <i class="fas fa-camera"></i> 사진 인증하기
+                                        </label>
+                                        <button class="btn-mission-complete-action" id="complete-${mId}" disabled data-id="${mId}" data-reward="${m.reward}">
+                                            미션 완료하기
+                                        </button>
+                                    </div>
+                                `
+                                : `<button class="btn-mission-status" disabled>진행 중 🔥</button>`
                     }
                 </div>
             `;
             container.appendChild(card);
+
+            // 이벤트 바인딩
+            if (!isCompleted && isStudyMission) {
+                card.querySelector('.btn-mission-join-study').onclick = () => {
+                    startStudyTimer(mId, m.title);
+                };
+            }
+
+            // 효도 미션 이벤트 바인딩
+            if (!isCompleted && isFamilyMission) {
+                const fileInput = getEl(`file-${mId}`);
+                const completeBtn = getEl(`complete-${mId}`);
+                const label = getEl(`label-${mId}`);
+
+                fileInput.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    label.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 업로드 중...`;
+                    label.style.pointerEvents = 'none';
+
+                    try {
+                        const storageRef = ref(storage, `missions/${currentUser.id}/${mId}_${Date.now()}`);
+                        await uploadBytes(storageRef, file);
+                        const downloadURL = await getDownloadURL(storageRef);
+                        
+                        label.innerHTML = `<i class="fas fa-check"></i> 인증 완료`;
+                        label.classList.add('success');
+                        completeBtn.disabled = false;
+                        completeBtn.classList.add('ready');
+                        
+                        // 업로드된 URL 임시 저장 (필요 시 Firestore 업데이트)
+                        missionData.proofUrl = downloadURL;
+                    } catch (error) {
+                        console.error("Upload error:", error);
+                        alert("사진 업로드에 실패했습니다.");
+                        label.innerHTML = `<i class="fas fa-camera"></i> 다시 시도`;
+                        label.style.pointerEvents = 'auto';
+                    }
+                };
+
+                completeBtn.onclick = async () => {
+                    const reward = parseInt(completeBtn.getAttribute('data-reward'));
+                    await finishMission(mId, reward);
+                };
+            }
         });
 
-        document.querySelectorAll('.btn-mission-join').forEach(btn => {
-            btn.onclick = async (e) => {
-                const id = e.target.getAttribute('data-id');
-                await joinMission(id);
-            };
-        });
+        if (container.innerHTML === '') {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-gray);">진행 중인 미션이 없습니다.<br>상단의 "미션 가져오기"를 클릭해 보세요!</p>';
+        }
     } catch (error) {
         console.error("Missions load error:", error);
         container.innerHTML = '<p style="text-align:center; color:#ff4d4d;">데이터 로드 실패 (Firestore 설정을 확인하세요)</p>';
+    }
+}
+
+// --- 공부 타이머 전용 로직 ---
+let studyInterval = null;
+let studyStartTime = null;
+let activeMissionId = null;
+
+function startStudyTimer(missionId, title) {
+    activeMissionId = missionId;
+    studyStartTime = new Date();
+    getEl('modal-study-timer').classList.remove('hidden');
+    getEl('timer-display').innerText = "00:00:00";
+    getEl('timer-status-msg').classList.remove('hidden');
+    
+    studyInterval = setInterval(updateTimerUI, 1000);
+}
+
+function updateTimerUI() {
+    if (!studyStartTime) return;
+    const now = new Date();
+    const diff = Math.floor((now - studyStartTime) / 1000);
+    const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+    const s = String(diff % 60).padStart(2, '0');
+    getEl('timer-display').innerText = `${h}:${m}:${s}`;
+}
+
+getEl('btn-timer-stop').onclick = async () => {
+    if (!studyInterval) return;
+    
+    const now = new Date();
+    const durationMinutes = Math.floor((now - studyStartTime) / (1000 * 60));
+    const earnedPoints = durationMinutes * 100; // 1분당 100P (예시)
+
+    clearInterval(studyInterval);
+    studyInterval = null;
+    getEl('modal-study-timer').classList.add('hidden');
+
+    if (durationMinutes < 1) {
+        alert("최소 1분 이상 집중해야 포인트가 적립됩니다! 조금 더 힘내봐요! 💪");
+    } else {
+        await finishMission(activeMissionId, earnedPoints);
+    }
+    
+    activeMissionId = null;
+    studyStartTime = null;
+};
+
+// 휴대폰 사용 감지 (App Background/Foreground 감지)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && studyInterval) {
+        // 백그라운드에 있다가 다시 앱으로 돌아왔을 때 (잠금 해제 포함)
+        alert("🔥 미션 수행 중입니다! 휴대폰을 멀리하고 공부에 더 집중해 보세요! 🔥");
+    }
+});
+
+async function finishMission(missionId, reward) {
+    if (!currentUser || !db) return;
+    try {
+        const updatedParticipating = {
+            ...(currentUser.participatingMissions || {}),
+            [missionId]: { ...currentUser.participatingMissions[missionId], progress: 100, completedAt: new Date() }
+        };
+        
+        currentUser.points += reward;
+        
+        await updateDoc(doc(db, "users", currentUser.id), {
+            participatingMissions: updatedParticipating,
+            points: currentUser.points
+        });
+        
+        currentUser.participatingMissions = updatedParticipating;
+        alert(`축하합니다! 미션을 완료하여 ${reward.toLocaleString()}P를 획득했습니다! 🎉`);
+        await updateDashboard();
+    } catch (error) {
+        console.error("Finish mission error:", error);
+        alert("미션 완료 처리에 실패했습니다.");
     }
 }
 
