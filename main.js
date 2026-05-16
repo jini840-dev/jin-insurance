@@ -437,17 +437,38 @@ async function init() {
     const inputPhone = getEl('input-phone');
     const inputNickname = getEl('input-nickname');
     if (inputPhone) {
-        inputPhone.oninput = (e) => {
-            // 번호가 변경되면 닉네임 필드 초기화
-            if (inputNickname) {
-                inputNickname.value = "";
-                inputNickname.style.borderColor = "var(--border-color)";
-            }
-
+        inputPhone.oninput = async (e) => {
             let val = e.target.value.replace(/[^0-9]/g, '');
             if (val.length > 3 && val.length <= 7) val = val.slice(0, 3) + '-' + val.slice(3);
             else if (val.length > 7) val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7);
             e.target.value = val;
+
+            // 번호 입력이 완료되면(13자) 기존 사용자 확인
+            if (val.length === 13) {
+                try {
+                    const usersRef = collection(db, "users");
+                    const q = query(usersRef, where("phone", "==", val));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        const userData = querySnapshot.docs[0].data();
+                        if (inputNickname) {
+                            inputNickname.value = userData.nickname;
+                            inputNickname.style.borderColor = "var(--neon-green)";
+                            // 사용자에게 알림 효과 (선택사항)
+                            console.log("기존 사용자 확인:", userData.nickname);
+                        }
+                    } else {
+                        // 신규 사용자인 경우 닉네임 필드 초기화 및 강조 해제
+                        if (inputNickname) {
+                            inputNickname.value = "";
+                            inputNickname.style.borderColor = "var(--border-color)";
+                        }
+                    }
+                } catch (error) {
+                    console.error("User check error:", error);
+                }
+            }
         };
     }
 
