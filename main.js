@@ -484,6 +484,15 @@ async function init() {
     }
 
     getEl('btn-start-quiz').onclick = () => {
+        if (!currentUser) return;
+        
+        // 오늘 이미 퀴즈를 풀었는지 확인
+        const today = new Date().toLocaleDateString();
+        if (currentUser.lastQuizDate === today) {
+            alert("오늘의 퀴즈 기회를 이미 사용하셨습니다! 내일 다시 도전해 주세요. 💡");
+            return;
+        }
+
         if (QUIZ_DATA.length === 0) {
             alert("퀴즈 데이터를 불러오는 중입니다. 잠시만 기다려주세요.");
             return;
@@ -667,10 +676,17 @@ getEl('btn-quiz-next').onclick = async () => {
     } else {
         const perQuestion = MISSION_STANDARDS.quiz ? MISSION_STANDARDS.quiz.perQuestion : 500;
         const reward = correctAnswersCount * perQuestion;
+        const today = new Date().toLocaleDateString();
+        
         currentUser.points += reward;
+        currentUser.lastQuizDate = today;
+
         try {
-            await updateDoc(doc(db, "users", currentUser.id), { points: currentUser.points });
-            alert(`퀴즈 완료! ${correctAnswersCount}문제를 맞혀 ${reward}P를 획득했습니다! 🚀`);
+            await updateDoc(doc(db, "users", currentUser.id), { 
+                points: currentUser.points,
+                lastQuizDate: today
+            });
+            alert(`퀴즈 완료! ${correctAnswersCount}문제를 맞혀 ${reward}P를 획득했습니다! 🚀\n내일 새로운 퀴즈로 만나요!`);
             getEl('modal-quiz').classList.add('hidden');
             await updateDashboard();
         } catch (error) {
