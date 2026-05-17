@@ -48,6 +48,7 @@
                 <h3>성장 크루 가입</h3>
                 <p>성장을 시작할 휴대폰 번호와 닉네임을 입력해 주세요.</p>
                 <input type="tel" id="input-phone" placeholder="010-0000-0000" maxlength="13">
+                <input type="number" id="input-birth-year" placeholder="출생 연도 (예: 2010)" min="1900" max="2026">
                 <input type="text" id="input-nickname" placeholder="닉네임 (예: 지니)" maxlength="10">
                 <div class="modal-btns">
                     <button id="btn-modal-close" class="btn-secondary">취소</button>
@@ -64,9 +65,6 @@
                         <div class="brand-label">
                             <div class="hanwha-ci">
                                 <svg viewBox="0 0 72 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="16" cy="16" r="14" stroke="#F37021" stroke-width="4"/>
-                                    <circle cx="36" cy="16" r="14" stroke="#F37021" stroke-width="4"/>
-                                    <circle cx="56" cy="16" r="14" stroke="#F37021" stroke-width="4"/>
                                 </svg>
                             </div>
                             Hanwha Life x JIN-Growth
@@ -145,12 +143,86 @@
             </div>
 
             <nav class="bottom-nav">
-                <div class="nav-item active" title="홈"><i class="fas fa-home"></i></div>
-                <div class="nav-item" title="챌린지"><i class="fas fa-bolt"></i></div>
-                <div class="nav-item" title="보상"><i class="fas fa-gift"></i></div>
-                <div class="nav-item" title="내 정보"><i class="fas fa-user"></i></div>
+                <div class="nav-item active" id="nav-home" title="홈"><i class="fas fa-home"></i></div>
+                <div class="nav-item" id="nav-challenge" title="챌린지"><i class="fas fa-bolt"></i></div>
+                <div class="nav-item" id="nav-reward" title="보상"><i class="fas fa-gift"></i></div>
+                <div class="nav-item" id="nav-profile" title="내 정보"><i class="fas fa-user"></i></div>
             </nav>
         </section>
+
+        <!-- 3. Reward Page -->
+        <section id="page-reward" class="page hidden">
+            <header class="header-growth">
+                <div class="user-status">
+                    <div class="welcome-msg">
+                        <h3>🎁 포인트 보상 샵</h3>
+                        <p>미션으로 모은 자산으로 보상을 받으세요!</p>
+                    </div>
+                    <div class="point-status">
+                        <span class="point-label">MY ASSET</span>
+                        <span id="reward-user-points" class="points">0</span>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="reward-list">
+                <div class="reward-item-card">
+                    <div class="reward-icon"><i class="fas fa-coffee"></i></div>
+                    <div class="reward-info">
+                        <h4>편의점 커피 쿠폰</h4>
+                        <p>2,000 P</p>
+                    </div>
+                    <button class="btn-redeem" data-id="r1" data-price="2000" data-name="편의점 커피">교환하기</button>
+                </div>
+                <div class="reward-item-card">
+                    <div class="reward-icon"><i class="fas fa-hamburger"></i></div>
+                    <div class="reward-info">
+                        <h4>햄버거 세트 교환권</h4>
+                        <p>8,000 P</p>
+                    </div>
+                    <button class="btn-redeem" data-id="r2" data-price="8000" data-name="햄버거 세트">교환하기</button>
+                </div>
+                <div class="reward-item-card">
+                    <div class="reward-icon"><i class="fas fa-store"></i></div>
+                    <div class="reward-info">
+                        <h4>편의점 5천원 금액권</h4>
+                        <p>5,000 P</p>
+                    </div>
+                    <button class="btn-redeem" data-id="r3" data-price="5000" data-name="편의점 5천원권">교환하기</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 내 정보 모달 -->
+        <div id="modal-profile" class="modal hidden">
+            <div class="modal-content">
+                <div class="profile-header">
+                    <i class="fas fa-user-circle"></i>
+                    <h3>내 프로필 정보</h3>
+                </div>
+                <div class="profile-info-list">
+                    <div class="profile-info-item">
+                        <span>닉네임</span>
+                        <strong id="prof-nickname">-</strong>
+                    </div>
+                    <div class="profile-info-item">
+                        <span>휴대폰 번호</span>
+                        <strong id="prof-phone">-</strong>
+                    </div>
+                    <div class="profile-info-item">
+                        <span>출생 연도</span>
+                        <strong id="prof-birth">-</strong>
+                    </div>
+                    <div class="profile-info-item">
+                        <span>현재 자산(P)</span>
+                        <strong id="prof-points" style="color:var(--neon-green)">0</strong>
+                    </div>
+                </div>
+                <div class="modal-btns">
+                    <button id="btn-profile-close" class="btn-primary">확인</button>
+                </div>
+            </div>
+        </div>
 
         <!-- 경제 퀴즈 모달 -->
         <div id="modal-quiz" class="modal hidden">

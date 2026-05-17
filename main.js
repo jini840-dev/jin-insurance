@@ -121,15 +121,69 @@ function switchPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
     const target = getEl(`page-${pageId}`);
     if (target) target.classList.remove('hidden');
+
+    // 네비게이션 아이템 활성화 상태 업데이트
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    const activeNav = getEl(`nav-${pageId === 'dashboard' ? 'home' : pageId}`);
+    if (activeNav) activeNav.classList.add('active');
 }
 
 async function updateDashboard() {
     if (!currentUser) return;
-    getEl('user-points').innerText = (currentUser.points || 0).toLocaleString();
+    const points = currentUser.points || 0;
+    getEl('user-points').innerText = points.toLocaleString();
+    if (getEl('prof-points')) getEl('prof-points').innerText = points.toLocaleString();
+    if (getEl('reward-user-points')) getEl('reward-user-points').innerText = points.toLocaleString();
+    
     // 1P = 1원 기준으로 복리 계산
-    const futureValue = (currentUser.points * 1) * Math.pow(1.05, 20 - (currentUser.age || 16));
+    const currentYear = new Date().getFullYear();
+    const userBirthYear = currentUser.birthYear || (currentYear - 16);
+    const koreanAge = currentYear - userBirthYear + 1;
+    const yearsToAdulthood = Math.max(0, 20 - koreanAge);
+    
+    const futureValue = (points * 1) * Math.pow(1.05, yearsToAdulthood);
     getEl('future-asset-value').innerText = Math.floor(futureValue).toLocaleString();
+    
+    const adultYear = userBirthYear + 19; // 20세가 되는 해 (한국식)
+    const assetDesc = document.querySelector('.asset-desc');
+    if (assetDesc) {
+        assetDesc.innerText = `${adultYear}년 성인이 되었을 때 예상액 (연 5% 복리)`;
+    }
+    
     await renderMissions();
+}
+
+// --- 프로필 모달 업데이트 ---
+function openProfileModal() {
+    if (!currentUser) return;
+    getEl('prof-nickname').innerText = currentUser.nickname;
+    getEl('prof-phone').innerText = currentUser.phone;
+    getEl('prof-birth').innerText = `${currentUser.birthYear}년생`;
+    getEl('prof-points').innerText = (currentUser.points || 0).toLocaleString();
+    getEl('modal-profile').classList.remove('hidden');
+}
+
+// --- 보상 교환 로직 ---
+async function redeemReward(rewardId, price, name) {
+    if (!currentUser) return;
+    if (currentUser.points < price) {
+        alert("자산(포인트)이 부족합니다! 미션을 더 수행해 보세요. 💪");
+        return;
+    }
+    
+    if (confirm(`'${name}' 상품을 ${price.toLocaleString()}P로 교환하시겠습니까?`)) {
+        try {
+            currentUser.points -= price;
+            await updateDoc(doc(db, "users", currentUser.id), {
+                points: currentUser.points
+            });
+            alert(`교환 성공! '${name}' 쿠폰이 발급되었습니다. 🎁\n남은 자산: ${currentUser.points.toLocaleString()}P`);
+            await updateDashboard();
+        } catch (error) {
+            console.error("Redeem error:", error);
+            alert("교환 처리 중 오류가 발생했습니다.");
+        }
+    }
 }
 
 async function renderMissions() {
@@ -353,7 +407,7 @@ async function joinMission(missionId) {
     }
 }
 
-async function loginUser(phone, nickname) {
+async function loginUser(phone, nickname, birthYear) {
     if (!db) {
         alert("데이터베이스 초기화 중입니다. 잠시 후 다시 시도하세요.");
         return;
@@ -369,6 +423,7 @@ async function loginUser(phone, nickname) {
             const newUser = { 
                 phone, 
                 nickname, 
+                birthYear: parseInt(birthYear),
                 points: 1250, 
                 createdAt: new Date(),
                 participatingMissions: {}
@@ -377,10 +432,15 @@ async function loginUser(phone, nickname) {
             foundUser = { id: docRef.id, ...newUser };
         } else {
             const userDoc = querySnapshot.docs[0];
-            foundUser = { id: userDoc.id, ...userDoc.data() };
+            const existingData = userDoc.data();
+            // birthYear가 없는 기존 사용자의 경우 업데이트
+            if (!existingData.birthYear) {
+                await updateDoc(userDoc.ref, { birthYear: parseInt(birthYear) });
+            }
+            foundUser = { id: userDoc.id, ...existingData, birthYear: existingData.birthYear || parseInt(birthYear) };
         }
         
-        currentUser = { ...foundUser, age: 16 };
+        currentUser = foundUser;
         getEl('user-nickname').innerText = `${currentUser.nickname} (#${currentUser.id.substring(0, 6)})`;
         getEl('modal-phone').classList.add('hidden');
         
@@ -427,12 +487,37 @@ async function init() {
     getEl('btn-phone-submit').onclick = async () => {
         const nickVal = getEl('input-nickname').value.trim();
         const phoneVal = getEl('input-phone').value.trim();
-        if (nickVal.length < 2 || phoneVal.length < 10) {
+        const birthYearVal = getEl('input-birth-year').value.trim();
+
+        if (nickVal.length < 2 || phoneVal.length < 10 || !birthYearVal) {
             alert('정확한 정보를 입력해 주세요.');
             return;
         }
-        await loginUser(phoneVal, nickVal);
+        await loginUser(phoneVal, nickVal, birthYearVal);
     };
+
+    // 네비게이션 이벤트
+    getEl('nav-home').onclick = () => switchPage('dashboard');
+    getEl('nav-challenge').onclick = () => switchPage('dashboard'); // 챌린지는 대시보드와 동일
+    getEl('nav-reward').onclick = () => {
+        switchPage('reward');
+        if (currentUser) {
+            getEl('reward-user-points').innerText = (currentUser.points || 0).toLocaleString();
+        }
+    };
+    getEl('nav-profile').onclick = () => openProfileModal();
+
+    getEl('btn-profile-close').onclick = () => getEl('modal-profile').classList.add('hidden');
+
+    // 보상 교환 버튼들
+    document.querySelectorAll('.btn-redeem').forEach(btn => {
+        btn.onclick = async () => {
+            const rid = btn.getAttribute('data-id');
+            const price = parseInt(btn.getAttribute('data-price'));
+            const name = btn.getAttribute('data-name');
+            await redeemReward(rid, price, name);
+        };
+    });
 
     const inputPhone = getEl('input-phone');
     const inputNickname = getEl('input-nickname');
