@@ -56,21 +56,32 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    min-height: -webkit-fill-available; /* Mobile safari fix */
     color: var(--text-white);
+    overflow: hidden; /* Prevent body scroll, handle it inside container */
 }
 
 .app-container {
     width: 100%;
     max-width: 420px;
-    height: 90vh;
+    height: 100vh; /* Fallback */
+    height: -webkit-fill-available; /* Fill the screen */
     background-color: var(--bg-black);
-    border-radius: 40px;
     position: relative;
     overflow: hidden;
     box-shadow: 0 0 30px rgba(57, 255, 20, 0.2);
     display: flex;
     flex-direction: column;
-    border: 2px solid #333;
+    border: none; /* Mobile feels cleaner without borders */
+}
+
+/* For larger screens like tablets/desktops, keep it compact */
+@media (min-width: 421px) {
+    .app-container {
+        height: 92vh;
+        border-radius: 40px;
+        border: 2px solid #333;
+    }
 }
 
 /* Page Transitions */
@@ -82,9 +93,10 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 30px 24px;
+    padding: 24px;
     transition: transform 0.3s ease-out;
     background-color: var(--bg-black);
+    overflow: hidden; /* Scroll handled by children */
 }
 
 .hidden {

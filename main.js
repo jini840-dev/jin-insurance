@@ -521,6 +521,7 @@ async function init() {
 
     const inputPhone = getEl('input-phone');
     const inputNickname = getEl('input-nickname');
+    const inputBirthYear = getEl('input-birth-year');
     if (inputPhone) {
         inputPhone.oninput = async (e) => {
             let val = e.target.value.replace(/[^0-9]/g, '');
@@ -540,14 +541,22 @@ async function init() {
                         if (inputNickname) {
                             inputNickname.value = userData.nickname;
                             inputNickname.style.borderColor = "var(--neon-green)";
-                            // 사용자에게 알림 효과 (선택사항)
-                            console.log("기존 사용자 확인:", userData.nickname);
                         }
+                        if (inputBirthYear && userData.birthYear) {
+                            inputBirthYear.value = userData.birthYear;
+                            inputBirthYear.style.borderColor = "var(--neon-green)";
+                        }
+                        // 사용자에게 알림 효과 (선택사항)
+                        console.log("기존 사용자 확인:", userData.nickname);
                     } else {
-                        // 신규 사용자인 경우 닉네임 필드 초기화 및 강조 해제
+                        // 신규 사용자인 경우 필드 초기화 및 강조 해제
                         if (inputNickname) {
                             inputNickname.value = "";
-                            inputNickname.style.borderColor = "var(--border-color)";
+                            inputNickname.style.borderColor = "";
+                        }
+                        if (inputBirthYear) {
+                            inputBirthYear.value = "";
+                            inputBirthYear.style.borderColor = "";
                         }
                     }
                 } catch (error) {
