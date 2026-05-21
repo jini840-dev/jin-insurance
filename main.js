@@ -212,9 +212,23 @@ async function renderMissions() {
 
             const missionData = userMissions[mId];
             const currentProgress = missionData.progress || 0;
-            const isCompleted = currentProgress >= 100;
             const isFamilyMission = m.tag && m.tag.includes('효도');
             const isStudyMission = m.tag && m.tag.includes('공부');
+
+            let isCompleted = currentProgress >= 100;
+
+            // 공부 미션 일일 초기화 로직
+            if (isStudyMission && isCompleted && missionData.completedAt) {
+                const completedDate = missionData.completedAt.toDate ? missionData.completedAt.toDate() : new Date(missionData.completedAt);
+                const today = new Date();
+                const isSameDay = completedDate.getDate() === today.getDate() &&
+                                 completedDate.getMonth() === today.getMonth() &&
+                                 completedDate.getFullYear() === today.getFullYear();
+                
+                if (!isSameDay) {
+                    isCompleted = false; // 하루가 지났으면 다시 도전 가능
+                }
+            }
 
             const card = document.createElement('div');
             card.className = `mission-card ${isCompleted ? 'completed' : 'active'}`;
@@ -225,11 +239,11 @@ async function renderMissions() {
                 </div>
                 <div class="mission-title">${m.title || '제목 없음'}</div>
                 <div class="progress-container">
-                    <div class="progress-fill" style="width: ${currentProgress}%"></div>
+                    <div class="progress-fill" style="width: ${isCompleted ? 100 : (isStudyMission ? 0 : currentProgress)}%"></div>
                 </div>
                 <div class="mission-footer">
-                    <span>${isCompleted ? '달성 완료! 🎉' : '나의 성공률 ' + currentProgress + '%'}</span>
-                    <span class="reward-points">+${(m.reward || 0).toLocaleString()}P 예정</span>
+                    <span>${isCompleted ? '오늘 달성 완료! 🎉' : (isStudyMission ? '오늘의 집중을 시작하세요!' : '나의 성공률 ' + currentProgress + '%')}</span>
+                    <span class="reward-points">${isFamilyMission ? '사진 1장당 ' + (m.reward || 500).toLocaleString() + 'P' : '+' + (m.reward || 0).toLocaleString() + 'P 예정'}</span>
                 </div>
                 <div class="mission-action">
                     ${isCompleted 
@@ -241,11 +255,8 @@ async function renderMissions() {
                                     <div class="upload-area">
                                         <input type="file" id="file-${mId}" class="input-file-hidden" accept="image/*">
                                         <label for="file-${mId}" class="btn-upload-label" id="label-${mId}">
-                                            <i class="fas fa-camera"></i> 사진 인증하기
+                                            <i class="fas fa-camera"></i> 사진 인증하고 포인트 받기
                                         </label>
-                                        <button class="btn-mission-complete-action" id="complete-${mId}" disabled data-id="${mId}" data-reward="${m.reward}">
-                                            미션 완료하기
-                                        </button>
                                     </div>
                                 `
                                 : `<button class="btn-mission-status" disabled>진행 중 🔥</button>`
@@ -261,43 +272,44 @@ async function renderMissions() {
                 };
             }
 
-            // 효도 미션 이벤트 바인딩
-            if (!isCompleted && isFamilyMission) {
+            // 효도 미션 이벤트 바인딩 (업로드 즉시 포인트 지급)
+            if (isFamilyMission) {
                 const fileInput = getEl(`file-${mId}`);
-                const completeBtn = getEl(`complete-${mId}`);
                 const label = getEl(`label-${mId}`);
 
-                fileInput.onchange = async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
+                if (fileInput) {
+                    fileInput.onchange = async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
 
-                    label.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 업로드 중...`;
-                    label.style.pointerEvents = 'none';
+                        label.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 업로드 중...`;
+                        label.style.pointerEvents = 'none';
 
-                    try {
-                        const storageRef = ref(storage, `missions/${currentUser.id}/${mId}_${Date.now()}`);
-                        await uploadBytes(storageRef, file);
-                        const downloadURL = await getDownloadURL(storageRef);
-                        
-                        label.innerHTML = `<i class="fas fa-check"></i> 인증 완료`;
-                        label.classList.add('success');
-                        completeBtn.disabled = false;
-                        completeBtn.classList.add('ready');
-                        
-                        // 업로드된 URL 임시 저장 (필요 시 Firestore 업데이트)
-                        missionData.proofUrl = downloadURL;
-                    } catch (error) {
-                        console.error("Upload error:", error);
-                        alert("사진 업로드에 실패했습니다.");
-                        label.innerHTML = `<i class="fas fa-camera"></i> 다시 시도`;
-                        label.style.pointerEvents = 'auto';
-                    }
-                };
+                        try {
+                            const storageRef = ref(storage, `missions/${currentUser.id}/${mId}_${Date.now()}`);
+                            await uploadBytes(storageRef, file);
+                            const downloadURL = await getDownloadURL(storageRef);
+                            
+                            label.innerHTML = `<i class="fas fa-check"></i> 인증 완료 (+${(m.reward || 500).toLocaleString()}P)`;
+                            label.classList.add('success');
+                            
+                            // 업로드 즉시 포인트 지급
+                            await addPoints(m.reward || 500, `${m.title} 사진 인증`);
+                            
+                            setTimeout(() => {
+                                label.innerHTML = `<i class="fas fa-camera"></i> 추가 사진 인증하기`;
+                                label.classList.remove('success');
+                                label.style.pointerEvents = 'auto';
+                            }, 3000);
 
-                completeBtn.onclick = async () => {
-                    const reward = parseInt(completeBtn.getAttribute('data-reward'));
-                    await finishMission(mId, reward);
-                };
+                        } catch (error) {
+                            console.error("Upload error:", error);
+                            alert("사진 업로드에 실패했습니다.");
+                            label.innerHTML = `<i class="fas fa-camera"></i> 다시 시도`;
+                            label.style.pointerEvents = 'auto';
+                        }
+                    };
+                }
             }
         });
 
@@ -385,6 +397,20 @@ async function finishMission(missionId, reward) {
     } catch (error) {
         console.error("Finish mission error:", error);
         alert("미션 완료 처리에 실패했습니다.");
+    }
+}
+
+async function addPoints(amount, reason) {
+    if (!currentUser || !db) return;
+    try {
+        currentUser.points += amount;
+        await updateDoc(doc(db, "users", currentUser.id), {
+            points: currentUser.points
+        });
+        alert(`${reason} 완료! ${amount.toLocaleString()}P가 적립되었습니다. 💰`);
+        await updateDashboard();
+    } catch (error) {
+        console.error("Add points error:", error);
     }
 }
 
