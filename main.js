@@ -115,6 +115,39 @@ async function loadReferenceData() {
 // UI 요소 선언
 const getEl = (id) => document.getElementById(id);
 
+// --- 미래가치 계산 함수 ---
+function calculateFutureAsset(birthYear, currentPoints, baseAnnualRate = 0.05, streakBonusRate = 0.0) {
+  const today = new Date();
+  const birthDate = new Date(birthYear, 0, 1);
+  
+  const targetDate = new Date(birthDate);
+  targetDate.setFullYear(targetDate.getFullYear() + 19); // 한국 나이 대략 스무살(만 19세)
+
+  if (today >= targetDate) {
+    return {
+      remainingMonths: 0,
+      futureValue: currentPoints,
+      totalInterestRate: baseAnnualRate + streakBonusRate
+    };
+  }
+
+  let remainingMonths = (targetDate.getFullYear() - today.getFullYear()) * 12;
+  remainingMonths -= today.getMonth();
+  remainingMonths += targetDate.getMonth();
+  if (remainingMonths < 0) remainingMonths = 0;
+
+  const totalAnnualRate = baseAnnualRate + streakBonusRate;
+  const monthlyRate = totalAnnualRate / 12;
+  
+  const futureValue = currentPoints * Math.pow((1 + monthlyRate), remainingMonths);
+
+  return {
+    remainingMonths: remainingMonths,
+    futureValue: Math.floor(futureValue),
+    totalInterestRate: totalAnnualRate
+  };
+}
+
 // --- 핵심 비즈니스 로직 ---
 
 function switchPage(pageId) {
@@ -135,19 +168,16 @@ async function updateDashboard() {
     if (getEl('prof-points')) getEl('prof-points').innerText = points.toLocaleString();
     if (getEl('reward-user-points')) getEl('reward-user-points').innerText = points.toLocaleString();
     
-    // 1P = 1원 기준으로 복리 계산
-    const currentYear = new Date().getFullYear();
-    const userBirthYear = currentUser.birthYear || (currentYear - 16);
-    const koreanAge = currentYear - userBirthYear + 1;
-    const yearsToAdulthood = Math.max(0, 20 - koreanAge);
+    // 월복리 미래가치 산출 로직 적용 (스트릭 보너스 2% 가산 가정)
+    const userBirthYear = currentUser.birthYear || (new Date().getFullYear() - 17); // 기본값 고2(2009년생)
+    const futureAsset = calculateFutureAsset(userBirthYear, points, 0.05, 0.02);
     
-    const futureValue = (points * 1) * Math.pow(1.05, yearsToAdulthood);
-    getEl('future-asset-value').innerText = Math.floor(futureValue).toLocaleString();
+    getEl('future-asset-value').innerText = futureAsset.futureValue.toLocaleString();
     
-    const adultYear = userBirthYear + 19; // 20세가 되는 해 (한국식)
+    const adultYear = userBirthYear + 19;
     const assetDesc = document.querySelector('.asset-desc');
     if (assetDesc) {
-        assetDesc.innerText = `${adultYear}년 성인이 되었을 때 예상액 (연 5% 복리)`;
+        assetDesc.innerText = `${adultYear}년 스무 살이 되었을 때 예상액 (연 ${Math.floor(futureAsset.totalInterestRate * 100)}% 월복리)`;
     }
     
     await renderMissions();
@@ -243,7 +273,7 @@ async function renderMissions() {
                 </div>
                 <div class="mission-footer">
                     <span>${isCompleted ? '오늘 달성 완료! 🎉' : (isStudyMission ? '오늘의 집중을 시작하세요!' : '나의 성공률 ' + currentProgress + '%')}</span>
-                    <span class="reward-points">${isFamilyMission ? '사진 1장당 ' + (m.reward || 500).toLocaleString() + 'P' : '+' + (m.reward || 0).toLocaleString() + 'P 예정'}</span>
+                    <span class="reward-points">${isFamilyMission ? '사진 1장당 ' + (m.reward || 500).toLocaleString() + '원' : '+' + (m.reward || 0).toLocaleString() + '원 예정'}</span>
                 </div>
                 <div class="mission-action">
                     ${isCompleted 
@@ -290,11 +320,11 @@ async function renderMissions() {
                             await uploadBytes(storageRef, file);
                             const downloadURL = await getDownloadURL(storageRef);
                             
-                            label.innerHTML = `<i class="fas fa-check"></i> 인증 완료 (+${(m.reward || 500).toLocaleString()}P)`;
+                            label.innerHTML = `<i class="fas fa-check"></i> 인증 완료 (+${(m.reward || 500).toLocaleString()}원)`;
                             label.classList.add('success');
                             
                             // 업로드 즉시 포인트 지급
-                            await addPoints(m.reward || 500, `${m.title} 사진 인증`);
+                            await addPoints(m.reward || 500, `${m.title}`);
                             
                             setTimeout(() => {
                                 label.innerHTML = `<i class="fas fa-camera"></i> 추가 사진 인증하기`;
@@ -359,7 +389,7 @@ getEl('btn-timer-stop').onclick = async () => {
     getEl('modal-study-timer').classList.add('hidden');
 
     if (durationMinutes < 1) {
-        alert("최소 1분 이상 집중해야 포인트가 적립됩니다! 조금 더 힘내봐요! 💪");
+        alert("최소 1분 이상 집중해야 포인트가 적립됩니다! 조금 더 힘내봐요! 💪\n잠깐! 여기서 포기하면 스무 살에 받을 이자가 공중분해돼요. 💸");
     } else {
         await finishMission(activeMissionId, earnedPoints);
     }
@@ -372,7 +402,7 @@ getEl('btn-timer-stop').onclick = async () => {
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && studyInterval) {
         // 백그라운드에 있다가 다시 앱으로 돌아왔을 때 (잠금 해제 포함)
-        alert("🔥 미션 수행 중입니다! 휴대폰을 멀리하고 공부에 더 집중해 보세요! 🔥");
+        alert("잠깐! 여기서 포기하면 스무 살에 받을 소중한 자산이 공중분해돼요. 💸\n휴대폰을 뒤집고 조금만 더 집중해 볼까요?");
     }
 });
 
@@ -392,7 +422,10 @@ async function finishMission(missionId, reward) {
         });
         
         currentUser.participatingMissions = updatedParticipating;
-        alert(`축하합니다! 미션을 완료하여 ${reward.toLocaleString()}P를 획득했습니다! 🎉`);
+        
+        const futureAsset = calculateFutureAsset(currentUser.birthYear || 2009, reward, 0.05, 0.02);
+        alert(`축하합니다! 미션을 완료하여 ${reward.toLocaleString()}원을 획득했습니다! 🎉\n복리의 마법으로 스무 살에는 ${futureAsset.futureValue.toLocaleString()}원이 될 거예요! 🚀`);
+        
         await updateDashboard();
     } catch (error) {
         console.error("Finish mission error:", error);
@@ -407,7 +440,10 @@ async function addPoints(amount, reason) {
         await updateDoc(doc(db, "users", currentUser.id), {
             points: currentUser.points
         });
-        alert(`${reason} 완료! ${amount.toLocaleString()}P가 적립되었습니다. 💰`);
+        
+        const futureAsset = calculateFutureAsset(currentUser.birthYear || 2009, amount, 0.05, 0.02);
+        alert(`오늘의 ${reason} 미션으로 번 ${amount.toLocaleString()}원 🍽️\n스무 살의 시드머니가 ${futureAsset.futureValue.toLocaleString()}원으로 점프했어요! 🚀 (연속 달성 우대금리 2% 팡팡!)`);
+        
         await updateDashboard();
     } catch (error) {
         console.error("Add points error:", error);
@@ -425,7 +461,7 @@ async function joinMission(missionId) {
             participatingMissions: updatedParticipating
         });
         currentUser.participatingMissions = updatedParticipating;
-        alert('챌린지에 참여했습니다! 성장을 시작해볼까요? 🚀');
+        alert("시간은 금이다? 아니, 시간은 '복리'다! ⏰\n챌린지에 참여했습니다! 성장을 시작해볼까요? 🚀");
         await renderMissions();
     } catch (error) {
         console.error("Join mission error:", error);
@@ -806,7 +842,9 @@ getEl('btn-quiz-next').onclick = async () => {
                 points: currentUser.points,
                 lastQuizDate: today
             });
-            alert(`퀴즈 완료! ${correctAnswersCount}문제를 맞혀 ${reward}P를 획득했습니다! 🚀\n내일 새로운 퀴즈로 만나요!`);
+            
+            const futureAsset = calculateFutureAsset(currentUser.birthYear || 2009, reward, 0.05, 0.02);
+            alert(`경제 지식 상승! 📈 ${correctAnswersCount}문제를 맞혀 ${reward}원을 획득했습니다!\n스무 살의 시드머니가 ${futureAsset.futureValue.toLocaleString()}원 더 늘어났어요! 🚀`);
             getEl('modal-quiz').classList.add('hidden');
             await updateDashboard();
         } catch (error) {
