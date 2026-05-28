@@ -693,6 +693,7 @@ async function init() {
 
     getEl('btn-admin-back').onclick = () => switchPage('dashboard');
     getEl('btn-asset-info').onclick = () => alert('현재 보유하신 자산(1P = 1원)을 기반으로, 한화생명의 연 5% 복리 수익률을 적용하여 성인이 되었을 때의 가치를 계산했습니다. 이 자산은 향후 한화생명 보험료 납입으로도 활용하실 수 있습니다! 🧡');
+    getEl('btn-hanwha-link').onclick = () => window.open('https://www.hanwhalife.com', '_blank');
 
     const missionForm = getEl('mission-form');
     if (missionForm) {
