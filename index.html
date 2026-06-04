@@ -157,41 +157,65 @@
 
         <!-- 3. Reward Page -->
         <section id="page-reward" class="page hidden">
-            <header class="header-growth">
-                <div class="user-status">
-                    <div class="welcome-msg">
-                        <h3>🎁 포인트 보상 샵</h3>
-                        <p>미션으로 모은 자산으로 보상을 받으세요!</p>
-                    </div>
-                    <div class="point-status">
-                        <span class="point-label">MY ASSET</span>
-                        <span id="reward-user-points" class="points">0</span>
-                    </div>
-                </div>
+            <header class="page-header">
+                <button class="btn-back-icon" onclick="switchPage('dashboard')">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h3 class="header-title">보상 샵</h3>
+                <div style="width:40px;"></div> <!-- 밸런스용 여백 -->
             </header>
+
+            <div class="user-reward-status">
+                <div class="status-info">
+                    <span class="status-label">보유 자산</span>
+                    <h2 id="reward-user-points" class="status-points">0</h2>
+                </div>
+                <div class="status-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
             
-            <div class="reward-list">
+            <div class="reward-grid">
                 <div class="reward-item-card">
-                    <div class="reward-icon"><i class="fas fa-coffee"></i></div>
+                    <div class="reward-img-area">
+                        <i class="fas fa-coffee"></i>
+                        <span class="reward-badge">BEST</span>
+                    </div>
                     <div class="reward-info">
                         <h4>편의점 커피 쿠폰</h4>
-                        <p>2,000 P</p>
+                        <div class="reward-price-row">
+                            <span class="price-val">2,000</span>
+                            <span class="price-unit">P</span>
+                        </div>
                     </div>
                     <button class="btn-redeem" data-id="r1" data-price="2000" data-name="편의점 커피">교환하기</button>
                 </div>
+
                 <div class="reward-item-card">
-                    <div class="reward-icon"><i class="fas fa-hamburger"></i></div>
+                    <div class="reward-img-area">
+                        <i class="fas fa-hamburger"></i>
+                    </div>
                     <div class="reward-info">
                         <h4>햄버거 세트 교환권</h4>
-                        <p>8,000 P</p>
+                        <div class="reward-price-row">
+                            <span class="price-val">8,000</span>
+                            <span class="price-unit">P</span>
+                        </div>
                     </div>
                     <button class="btn-redeem" data-id="r2" data-price="8000" data-name="햄버거 세트">교환하기</button>
                 </div>
+
                 <div class="reward-item-card">
-                    <div class="reward-icon"><i class="fas fa-store"></i></div>
+                    <div class="reward-img-area">
+                        <i class="fas fa-store"></i>
+                        <span class="reward-badge">HOT</span>
+                    </div>
                     <div class="reward-info">
-                        <h4>편의점 5천원 금액권</h4>
-                        <p>5,000 P</p>
+                        <h4>편의점 5천원권</h4>
+                        <div class="reward-price-row">
+                            <span class="price-val">5,000</span>
+                            <span class="price-unit">P</span>
+                        </div>
                     </div>
                     <button class="btn-redeem" data-id="r3" data-price="5000" data-name="편의점 5천원권">교환하기</button>
                 </div>
