@@ -585,6 +585,12 @@ async function init() {
     };
     getEl('nav-profile').onclick = () => openProfileModal();
 
+    // 보상 샵 뒤로가기 버튼
+    const btnRewardBack = getEl('btn-reward-back');
+    if (btnRewardBack) {
+        btnRewardBack.onclick = () => switchPage('dashboard');
+    }
+
     getEl('btn-profile-close').onclick = () => getEl('modal-profile').classList.add('hidden');
 
     // 보상 교환 버튼들
