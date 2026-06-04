@@ -522,6 +522,22 @@ async function init() {
     await loadReferenceData();
 
     // 인트로 페이지 버튼
+    const btnKakaoLogin = getEl('btn-kakao-login');
+    if (btnKakaoLogin) {
+        btnKakaoLogin.onclick = async () => {
+            // PRD: 카카오계정으로 자동 로그인 구성
+            // 실제 구현 시에는 Kakao SDK 연동이 필요하지만, 여기서는 시연용으로 자동 로그인을 모킹합니다.
+            console.log("Kakao auto-login triggered");
+            
+            // 기존 등록된 사용자가 있으면 해당 정보로, 없으면 기본 정보로 로그인
+            const mockPhone = "010-1234-5678";
+            const mockNickname = "힙한지니";
+            const mockBirth = "2009";
+
+            await loginUser(mockPhone, mockNickname, mockBirth);
+        };
+    }
+
     const btnPhoneLogin = getEl('btn-phone-login');
     if (btnPhoneLogin) {
         btnPhoneLogin.onclick = () => {
