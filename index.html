@@ -4,46 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.googleusercontent.com https://*.firebasestorage.app; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; frame-src 'self' https://*.firebaseapp.com;">
-    <title>JIN-Growth | 힙한 성장의 시작</title>
+    <title>JIN-Growth | 프리미엄 성장 관리</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
         <!-- 1. Intro Page -->
         <section id="page-intro" class="page">
-            <div class="intro-bg-overlay"></div>
             <div class="logo-area">
-                <div class="logo-tag">PREMIUM YOUTH ASSET</div>
+                <div class="logo-tag">Premium Youth Asset</div>
                 <h1 class="logo-main">JIN<br>GROWTH</h1>
-                <p class="logo-sub">힙하게 자산을 키우는 청소년 마중물</p>
+                <p class="logo-sub">성공을 위한 가장 정교한 습관 관리</p>
             </div>
+            
             <div class="login-btns">
                 <button id="btn-kakao-login" class="btn-kakao">
                     <i class="fas fa-comment"></i> 카카오 로그인
                 </button>
                 <button id="btn-phone-login" class="btn-phone">
-                    <i class="fas fa-mobile-alt"></i> 휴대폰 번호로 시작
+                    휴대폰 번호로 시작
                 </button>
             </div>
-            <!-- 배경음악 플레이어 -->
+
+            <!-- 배경음악 플레이어 (하단 배치) -->
             <div id="bg-music-player" class="music-player">
-                <div class="music-info">
-                    <i class="fas fa-music"></i> 
-                    <marquee scrollamount="3">Now Playing: HipHop_Beat_01.mp3 (Official Beat)</marquee>
-                </div>
-                <div class="player-controls">
-                    <i class="fas fa-step-backward"></i>
-                    <i class="fas fa-play" id="music-play-toggle"></i>
-                    <i class="fas fa-step-forward"></i>
-                </div>
                 <div class="visualizer">
                     <div class="bar"></div>
                     <div class="bar"></div>
                     <div class="bar"></div>
-                    <div class="bar"></div>
                 </div>
+                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">
+                    Now Playing: Focus Beat v1.0
+                </div>
+                <i class="fas fa-play" id="music-play-toggle" style="margin-left: auto; cursor: pointer; color: var(--accent-primary);"></i>
             </div>
         </section>
 
@@ -51,7 +46,7 @@
         <div id="modal-phone" class="modal hidden">
             <div class="modal-content">
                 <h3>성장 크루 가입</h3>
-                <p>성장을 시작할 휴대폰 번호와 닉네임을 입력해 주세요.</p>
+                <p>성장을 위한 최소한의 정보를 입력해 주세요.</p>
                 <input type="tel" id="input-phone" placeholder="010-0000-0000" maxlength="13">
                 <input type="number" id="input-birth-year" placeholder="출생 연도 (예: 2010)" min="1900" max="2026">
                 <input type="text" id="input-nickname" placeholder="닉네임 (예: 지니)" maxlength="10">
@@ -65,51 +60,43 @@
         <!-- 2. Dashboard Page -->
         <section id="page-dashboard" class="page hidden">
             <header class="header-growth">
-                <div class="user-status">
-                    <div class="welcome-msg">
-                        <div class="brand-label">
-                            <div class="hanwha-ci">
-                                <svg viewBox="0 0 72 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                </svg>
-                            </div>
-                            Hanwha Life x JIN-Growth
-                        </div>
-                        <span id="user-nickname">성장크루 #지니</span>
-                        <h2>오늘도 레벨업! 🔥</h2>
-                    </div>
-                    <div class="point-status">
-                        <span class="point-label">MY ASSET (KRW)</span>
-                        <span id="user-points" class="points">1,250</span>
-                    </div>
+                <div class="welcome-msg">
+                    <span id="user-nickname">성장크루 지니</span>
+                    <h2>오늘도 레벨업! 🔥</h2>
+                </div>
+                <div class="point-status">
+                    <span class="point-label">My Asset</span>
+                    <span class="points">₩ <span id="user-points">1,250</span></span>
                 </div>
             </header>
 
-            <!-- 복리 계산 자산 카드 -->
-            <div class="future-asset-card">
-                <div class="card-title-row">
-                    <h3>성인이 되었을 때 내 보험 자산은?<span class="asset-link-tag" id="btn-hanwha-link">LINK</span></h3>
-                    <i class="fas fa-info-circle" id="btn-asset-info"></i>
+            <div class="bento-grid">
+                <!-- 복리 계산 자산 카드 -->
+                <div class="future-asset-card bento-full">
+                    <div class="card-title-row">
+                        <h3>스무 살 예상 자산 <i class="fas fa-info-circle" id="btn-asset-info" style="font-size: 12px; opacity: 0.7; cursor: pointer;"></i></h3>
+                    </div>
+                    <div class="asset-amount">₩ <span id="future-asset-value">2,450,000</span></div>
+                    <p class="asset-desc">연 7% 복리 혜택 적용 시 (우대금리 포함)</p>
                 </div>
-                <div class="asset-amount">₩ <span id="future-asset-value">2,450,000</span></div>
-                <p class="asset-desc">미래 보험료 납입 가능 예상액 (연 5% 복리)</p>
-            </div>
 
-            <!-- 경제 퀴즈 배너 -->
-            <div id="quiz-banner" class="quiz-card">
-                <div class="quiz-info">
-                    <h4>오늘의 경제 퀴즈 💡</h4>
-                    <p>정답 맞히고 최대 2,000P 받기!</p>
+                <!-- 경제 퀴즈 배너 -->
+                <div id="quiz-banner" class="card quiz-card bento-full">
+                    <div class="quiz-info">
+                        <h4>오늘의 경제 퀴즈</h4>
+                        <p>정답 맞히고 시드머니 획득</p>
+                    </div>
+                    <button id="btn-start-quiz" class="btn-quiz-start">도전</button>
                 </div>
-                <button id="btn-start-quiz" class="btn-quiz-start">도전하기</button>
             </div>
 
             <div class="section-title">
-                <h4>진행 중인 미션</h4>
+                <h4>나의 성취</h4>
                 <div class="title-actions">
                     <button id="btn-get-mission" class="btn-icon-action">
-                        <i class="fas fa-download"></i> 미션 가져오기
+                        <i class="fas fa-plus"></i> 미션 추가
                     </button>
-                    <span id="go-admin" class="btn-admin-link">미션 관리(운영자)</span>
+                    <span id="go-admin" style="font-size: 11px; color: var(--text-muted); cursor: pointer; margin-left: 8px;">Admin</span>
                 </div>
             </div>
 
@@ -119,105 +106,77 @@
 
             <!-- 미션 풀(Pool) 모달 -->
             <div id="modal-mission-pool" class="modal hidden">
-                <div class="modal-content pool-modal">
+                <div class="modal-content">
                     <h3>미션 가져오기</h3>
-                    <p>부모님이 등록하신 미션 중 도전하고 싶은 미션을 선택하세요.</p>
-                    <div id="mission-pool-container" class="pool-list">
+                    <p>도전하고 싶은 미션을 선택하여 자산을 키워보세요.</p>
+                    <div id="mission-pool-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
                         <!-- 미션 목록이 JS로 생성됨 -->
                     </div>
                     <div class="modal-btns">
-                        <button id="btn-pool-close" class="btn-secondary">닫기</button>
+                        <button id="btn-pool-close" class="btn-secondary" style="width: 100%;">닫기</button>
                     </div>
                 </div>
             </div>
 
             <!-- 공부 타이머 모달 -->
             <div id="modal-study-timer" class="modal hidden">
-                <div class="modal-content timer-modal">
-                    <div class="timer-header">
-                        <i class="fas fa-book-reader"></i>
-                        <h3>공부 집중 챌린지</h3>
-                    </div>
-                    <div id="timer-display" class="timer-clock">00:00:00</div>
-                    <p class="timer-hint">휴대폰을 멀리할수록 자산이 쌓입니다. 🔥</p>
-                    <div id="timer-status-msg" class="timer-status hidden">집중 모드 가동 중...</div>
-                    <div class="modal-btns">
-                        <button id="btn-timer-stop" class="btn-primary">미션 종료 및 포인트 받기</button>
+                <div class="modal-content" style="text-align: center;">
+                    <i class="fas fa-stopwatch" style="font-size: 32px; color: var(--accent-primary); margin-bottom: 16px;"></i>
+                    <h3>집중 챌린지</h3>
+                    <div id="timer-display" style="font-size: 48px; font-weight: 800; margin: 24px 0; font-variant-numeric: tabular-nums;">00:00:00</div>
+                    <p id="timer-status-msg" style="color: var(--success); font-weight: 600;">집중 모드 가동 중...</p>
+                    <div class="modal-btns" style="margin-top: 32px;">
+                        <button id="btn-timer-stop" class="btn-primary">종료 및 자산화</button>
                     </div>
                 </div>
             </div>
 
             <nav class="bottom-nav">
-                <div class="nav-item active" id="nav-home" title="홈"><i class="fas fa-home"></i></div>
-                <div class="nav-item" id="nav-challenge" title="챌린지"><i class="fas fa-bolt"></i></div>
-                <div class="nav-item" id="nav-reward" title="보상"><i class="fas fa-gift"></i></div>
-                <div class="nav-item" id="nav-profile" title="내 정보"><i class="fas fa-user"></i></div>
+                <div class="nav-item active" id="nav-home"><i class="fas fa-th-large"></i></div>
+                <div class="nav-item" id="nav-challenge"><i class="fas fa-fire"></i></div>
+                <div class="nav-item" id="nav-reward"><i class="fas fa-gift"></i></div>
+                <div class="nav-item" id="nav-profile"><i class="fas fa-user-circle"></i></div>
             </nav>
         </section>
 
         <!-- 3. Reward Page -->
         <section id="page-reward" class="page hidden">
             <header class="page-header">
-                <button class="btn-back-icon" id="btn-reward-back">
-                    <i class="fas fa-chevron-left"></i>
+                <button class="btn-back-icon" id="btn-reward-back" style="color: var(--text-primary);">
+                    <i class="fas fa-arrow-left"></i>
                 </button>
                 <h3 class="header-title">보상 샵</h3>
-                <div style="width:40px;"></div> <!-- 밸런스용 여백 -->
+                <div style="width:40px;"></div>
             </header>
 
             <div class="user-reward-status">
-                <div class="status-info">
-                    <span class="status-label">보유 자산</span>
+                <div>
+                    <span class="point-label">Available Asset</span>
                     <h2 id="reward-user-points" class="status-points">0</h2>
                 </div>
-                <div class="status-icon">
-                    <i class="fas fa-wallet"></i>
-                </div>
+                <i class="fas fa-wallet" style="font-size: 24px; color: var(--accent-primary); opacity: 0.5;"></i>
             </div>
             
             <div class="reward-grid">
-                <div class="reward-item-card">
-                    <div class="reward-img-area">
-                        <i class="fas fa-coffee"></i>
-                        <span class="reward-badge">BEST</span>
-                    </div>
-                    <div class="reward-info">
-                        <h4>편의점 커피 쿠폰</h4>
-                        <div class="reward-price-row">
-                            <span class="price-val">2,000</span>
-                            <span class="price-unit">P</span>
-                        </div>
-                    </div>
-                    <button class="btn-redeem" data-id="r1" data-price="2000" data-name="편의점 커피">교환하기</button>
+                <div class="card reward-item-card">
+                    <div class="reward-img-area"><i class="fas fa-coffee"></i></div>
+                    <h4 style="font-size: 14px; margin-bottom: 4px;">편의점 커피</h4>
+                    <p style="font-size: 12px; color: var(--accent-primary); font-weight: 700; margin-bottom: 12px;">2,000P</p>
+                    <button class="btn-redeem" data-id="r1" data-price="2000" data-name="편의점 커피">교환</button>
                 </div>
 
-                <div class="reward-item-card">
-                    <div class="reward-img-area">
-                        <i class="fas fa-hamburger"></i>
-                    </div>
-                    <div class="reward-info">
-                        <h4>햄버거 세트 교환권</h4>
-                        <div class="reward-price-row">
-                            <span class="price-val">8,000</span>
-                            <span class="price-unit">P</span>
-                        </div>
-                    </div>
-                    <button class="btn-redeem" data-id="r2" data-price="8000" data-name="햄버거 세트">교환하기</button>
+                <div class="card reward-item-card">
+                    <div class="reward-img-area"><i class="fas fa-hamburger"></i></div>
+                    <h4 style="font-size: 14px; margin-bottom: 4px;">햄버거 세트</h4>
+                    <p style="font-size: 12px; color: var(--accent-primary); font-weight: 700; margin-bottom: 12px;">8,000P</p>
+                    <button class="btn-redeem" data-id="r2" data-price="8000" data-name="햄버거 세트">교환</button>
                 </div>
 
-                <div class="reward-item-card">
-                    <div class="reward-img-area">
-                        <i class="fas fa-store"></i>
-                        <span class="reward-badge">HOT</span>
-                    </div>
-                    <div class="reward-info">
-                        <h4>편의점 5천원권</h4>
-                        <div class="reward-price-row">
-                            <span class="price-val">5,000</span>
-                            <span class="price-unit">P</span>
-                        </div>
-                    </div>
-                    <button class="btn-redeem" data-id="r3" data-price="5000" data-name="편의점 5천원권">교환하기</button>
+                <div class="card reward-item-card">
+                    <div class="reward-img-area"><i class="fas fa-store"></i></div>
+                    <h4 style="font-size: 14px; margin-bottom: 4px;">상품권 5천원</h4>
+                    <p style="font-size: 12px; color: var(--accent-primary); font-weight: 700; margin-bottom: 12px;">5,000P</p>
+                    <button class="btn-redeem" data-id="r3" data-price="5000" data-name="상품권 5천원">교환</button>
                 </div>
             </div>
         </section>
@@ -225,49 +184,45 @@
         <!-- 내 정보 모달 -->
         <div id="modal-profile" class="modal hidden">
             <div class="modal-content">
-                <div class="profile-header">
-                    <i class="fas fa-user-circle"></i>
-                    <h3>내 프로필 정보</h3>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <i class="fas fa-user-circle" style="font-size: 48px; color: var(--accent-primary); margin-bottom: 12px;"></i>
+                    <h3>프로필 정보</h3>
                 </div>
-                <div class="profile-info-list">
-                    <div class="profile-info-item">
-                        <span>닉네임</span>
+                <div class="profile-info-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-muted);">닉네임</span>
                         <strong id="prof-nickname">-</strong>
                     </div>
-                    <div class="profile-info-item">
-                        <span>휴대폰 번호</span>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-muted);">연락처</span>
                         <strong id="prof-phone">-</strong>
                     </div>
-                    <div class="profile-info-item">
-                        <span>출생 연도</span>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-muted);">출생</span>
                         <strong id="prof-birth">-</strong>
                     </div>
-                    <div class="profile-info-item">
-                        <span>현재 자산(P)</span>
-                        <strong id="prof-points" style="color:var(--neon-green)">0</strong>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-muted);">자산</span>
+                        <strong id="prof-points" style="color: var(--accent-primary);">0</strong>
                     </div>
                 </div>
-                <div class="modal-btns">
-                    <button id="btn-profile-close" class="btn-primary">확인</button>
-                </div>
+                <button id="btn-profile-close" class="btn-primary" style="width: 100%;">확인</button>
             </div>
         </div>
 
         <!-- 경제 퀴즈 모달 -->
         <div id="modal-quiz" class="modal hidden">
-            <div class="modal-content quiz-modal">
-                <div id="quiz-container">
-                    <span id="quiz-step" class="quiz-badge">문제 1/4</span>
-                    <h3 id="quiz-question" class="quiz-q-text">물가가 계속 오르는 현상을 무엇이라고 할까요?</h3>
-                    <div id="quiz-options" class="quiz-options">
-                        <!-- 옵션이 JS로 생성됨 -->
-                    </div>
-                    <div id="quiz-result" class="quiz-result-msg hidden"></div>
-                    <div class="modal-btns">
-                        <button id="btn-quiz-close" class="btn-secondary">닫기</button>
-                        <button id="btn-quiz-check" class="btn-primary">정답 확인하기</button>
-                        <button id="btn-quiz-next" class="btn-primary hidden">다음 문제</button>
-                    </div>
+            <div class="modal-content">
+                <span id="quiz-step" style="font-size: 11px; font-weight: 700; color: var(--accent-primary); text-transform: uppercase;">문제 1/4</span>
+                <h3 id="quiz-question" style="font-size: 18px; margin: 12px 0 24px;">물가가 계속 오르는 현상을 무엇이라고 할까요?</h3>
+                <div id="quiz-options" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+                    <!-- 옵션이 JS로 생성됨 -->
+                </div>
+                <div id="quiz-result" class="hidden" style="padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;"></div>
+                <div class="modal-btns">
+                    <button id="btn-quiz-close" class="btn-secondary">닫기</button>
+                    <button id="btn-quiz-check" class="btn-primary">정답 확인</button>
+                    <button id="btn-quiz-next" class="btn-primary hidden">다음 문제</button>
                 </div>
             </div>
         </div>
@@ -275,43 +230,41 @@
         <!-- 운영자 비밀번호 입력 모달 -->
         <div id="modal-admin-auth" class="modal hidden">
             <div class="modal-content">
-                <h3>운영자 인증</h3>
-                <p>관리 페이지 접근을 위해 비밀번호를 입력하세요.</p>
-                <input type="password" id="input-admin-pw" placeholder="비밀번호 4자리" maxlength="4">
+                <h3>Admin Auth</h3>
+                <p>관리자 비밀번호를 입력해 주세요.</p>
+                <input type="password" id="input-admin-pw" placeholder="****" maxlength="4">
                 <div class="modal-btns">
                     <button id="btn-admin-auth-close" class="btn-secondary">취소</button>
-                    <button id="btn-admin-auth-submit" class="btn-primary">인증하기</button>
+                    <button id="btn-admin-auth-submit" class="btn-primary">인증</button>
                 </div>
             </div>
         </div>
 
         <!-- 3. Admin Page -->
         <section id="page-admin" class="page hidden">
-            <div class="admin-header">
-                <h2>챌린지 등록 (운영자)</h2>
-                <p>청소년들을 위한 새로운 성장을 설계하세요.</p>
-            </div>
+            <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">챌린지 관리</h2>
+            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">새로운 성장 동력을 설계하세요.</p>
 
             <form id="mission-form">
-                <div class="form-group">
-                    <label>챌린지 종류</label>
-                    <select id="mission-type">
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">챌린지 종류</label>
+                    <select id="mission-type" style="width:100%; padding:12px; border:1px solid var(--border-subtle); border-radius:8px; background:white;">
                         <option value="study">공부/독서 타이머 챌린지</option>
                         <option value="quiz">행운자산화 퀴즈 챌린지</option>
                         <option value="family">효도활동 자산화 챌린지</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>챌린지 명</label>
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">챌린지 명</label>
                     <input type="text" id="mission-title" placeholder="예: 매일 영단어 10개">
                 </div>
-                <div class="form-group">
-                    <label>보상 포인트</label>
+                <div style="margin-bottom: 24px;">
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">보상 포인트</label>
                     <input type="number" id="mission-reward" placeholder="500">
                 </div>
-                <button type="submit" class="btn-submit">챌린지 오픈하기</button>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 12px;">챌린지 오픈하기</button>
             </form>
-            <button id="btn-admin-back" class="btn-back">대시보드로 돌아가기</button>
+            <button id="btn-admin-back" class="btn-secondary" style="width: 100%;">돌아가기</button>
         </section>
     </div>
 

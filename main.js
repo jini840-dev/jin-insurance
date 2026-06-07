@@ -116,7 +116,7 @@ async function loadReferenceData() {
 const getEl = (id) => document.getElementById(id);
 
 // --- 미래가치 계산 함수 ---
-function calculateFutureAsset(birthYear, currentPoints, baseAnnualRate = 0.05, streakBonusRate = 0.0) {
+function calculateFutureAsset(birthYear, currentPoints, baseAnnualRate = 0.07, streakBonusRate = 0.0) {
   const today = new Date();
   const birthDate = new Date(birthYear, 0, 1);
   
@@ -170,7 +170,7 @@ async function updateDashboard() {
     
     // 월복리 미래가치 산출 로직 적용 (스트릭 보너스 2% 가산 가정)
     const userBirthYear = currentUser.birthYear || (new Date().getFullYear() - 17); // 기본값 고2(2009년생)
-    const futureAsset = calculateFutureAsset(userBirthYear, points, 0.05, 0.02);
+    const futureAsset = calculateFutureAsset(userBirthYear, points, 0.07, 0.02);
     
     getEl('future-asset-value').innerText = futureAsset.futureValue.toLocaleString();
     
@@ -261,35 +261,39 @@ async function renderMissions() {
             }
 
             const card = document.createElement('div');
-            card.className = `mission-card ${isCompleted ? 'completed' : 'active'}`;
+            card.className = `card mission-card ${isCompleted ? 'completed' : 'active'}`;
             card.innerHTML = `
-                <div class="mission-top">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="mission-tag">${m.tag || '챌린지'}</span>
-                    <span class="mission-period">${m.start || ''} ~ ${m.end || ''}</span>
+                    <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">${m.start || ''}</span>
                 </div>
-                <div class="mission-title">${m.title || '제목 없음'}</div>
-                <div class="progress-container">
-                    <div class="progress-fill" style="width: ${isCompleted ? 100 : (isStudyMission ? 0 : currentProgress)}%"></div>
+                <div class="mission-title" style="font-size: 16px; font-weight: 700; margin: 12px 0 8px;">${m.title || '제목 없음'}</div>
+                <div class="progress-container" style="height: 6px; background: #F3F4F6; border-radius: 3px; margin-bottom: 12px;">
+                    <div class="progress-fill" style="width: ${isCompleted ? 100 : (isStudyMission ? 0 : currentProgress)}%; height: 100%; background: var(--accent-primary); border-radius: 3px;"></div>
                 </div>
-                <div class="mission-footer">
-                    <span>${isCompleted ? '오늘 달성 완료! 🎉' : (isStudyMission ? '오늘의 집중을 시작하세요!' : '나의 성공률 ' + currentProgress + '%')}</span>
-                    <span class="reward-points">${isFamilyMission ? '사진 1장당 ' + (m.reward || 500).toLocaleString() + '원' : '+' + (m.reward || 0).toLocaleString() + '원 예정'}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">
+                        ${isCompleted ? '오늘 달성 🎉' : (isStudyMission ? '집중 필요' : currentProgress + '% 성공률')}
+                    </span>
+                    <span style="font-size: 13px; color: var(--accent-primary); font-weight: 700;">
+                        ${isFamilyMission ? '장당 ' + (m.reward || 500).toLocaleString() + 'P' : '+' + (m.reward || 0).toLocaleString() + 'P'}
+                    </span>
                 </div>
-                <div class="mission-action">
+                <div class="mission-action" style="margin-top: 16px;">
                     ${isCompleted 
-                        ? `<button class="btn-mission-done" disabled><i class="fas fa-check-circle"></i> 미션 완료</button>`
+                        ? `<button class="btn-secondary" style="width: 100%; cursor: default; opacity: 0.6;" disabled>완료됨</button>`
                         : isStudyMission
-                            ? `<button class="btn-mission-join-study" data-id="${mId}">타이머 시작하기 🔥</button>`
+                            ? `<button class="btn-primary btn-mission-join-study" style="width: 100%;" data-id="${mId}">타이머 시작</button>`
                             : isFamilyMission 
                                 ? `
                                     <div class="upload-area">
-                                        <input type="file" id="file-${mId}" class="input-file-hidden" accept="image/*">
-                                        <label for="file-${mId}" class="btn-upload-label" id="label-${mId}">
-                                            <i class="fas fa-camera"></i> 사진 인증하고 포인트 받기
+                                        <input type="file" id="file-${mId}" class="input-file-hidden" style="display:none;" accept="image/*">
+                                        <label for="file-${mId}" class="btn-primary" id="label-${mId}" style="display: flex; justify-content: center; align-items: center; cursor: pointer;">
+                                            사진 인증
                                         </label>
                                     </div>
                                 `
-                                : `<button class="btn-mission-status" disabled>진행 중 🔥</button>`
+                                : `<button class="btn-primary" style="width: 100%; opacity: 0.5;" disabled>진행 중</button>`
                     }
                 </div>
             `;
@@ -714,7 +718,7 @@ async function init() {
     };
 
     getEl('btn-admin-back').onclick = () => switchPage('dashboard');
-    getEl('btn-asset-info').onclick = () => alert('현재 보유하신 자산(1P = 1원)을 기반으로, 한화생명의 연 5% 복리 수익률을 적용하여 성인이 되었을 때의 가치를 계산했습니다. 이 자산은 향후 한화생명 보험료 납입으로도 활용하실 수 있습니다! 🧡');
+    getEl('btn-asset-info').onclick = () => alert('현재 보유하신 자산(1P = 1원)을 기반으로, 연 7%의 복리 수익률을 적용하여 성인이 되었을 때의 가치를 정밀 산출했습니다. 이 자산은 향후 다양한 제휴 서비스 가입 시 시드머니로 활용될 수 있습니다. 📈');
     getEl('btn-hanwha-link').onclick = () => window.open('https://www.hanwhalife.com', '_blank');
 
     const missionForm = getEl('mission-form');
@@ -777,14 +781,20 @@ async function renderMissionPool() {
 
             hasAvailable = true;
             const item = document.createElement('div');
-            item.className = 'pool-item';
+            item.className = 'card pool-item';
+            item.style.padding = '12px 16px';
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.alignItems = 'center';
+            item.style.marginBottom = '0';
+
             const rewardText = m.reward ? m.reward.toLocaleString() : '0';
             item.innerHTML = `
                 <div class="pool-item-info">
-                    <h5>${m.title || '제목 없음'}</h5>
-                    <p>+${rewardText}P</p>
+                    <h5 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">${m.title || '제목 없음'}</h5>
+                    <p style="font-size: 12px; color: var(--accent-primary); font-weight: 700;">+${rewardText}P</p>
                 </div>
-                <button class="btn-pool-join" data-id="${mId}">가져오기</button>
+                <button class="btn-primary btn-pool-join" style="padding: 6px 12px; font-size: 12px; border-radius: 8px;" data-id="${mId}">가져오기</button>
             `;
             container.appendChild(item);
         });
