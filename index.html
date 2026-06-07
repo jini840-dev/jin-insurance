@@ -92,6 +92,26 @@
                 </div>
                 <div class="asset-amount">₩ <span id="future-asset-value">2,450,000</span></div>
                 <p class="asset-desc">미래 보험료 납입 가능 예상액 (연 5% 복리)</p>
+                <button id="btn-show-recommend" class="btn-recommend-asset">
+                    <i class="fas fa-magic"></i> 가입 가능한 상품 추천받기
+                </button>
+            </div>
+
+            <!-- 추천 상품 모달 -->
+            <div id="modal-recommend" class="modal hidden">
+                <div class="modal-content recommend-modal">
+                    <div class="recommend-header">
+                        <div class="hanwha-logo-small">Hanwha Life</div>
+                        <h3>성인 맞춤 추천 상품 🧡</h3>
+                        <p>성장 크루님의 예상 자산(<span id="recom-target-asset">0</span>원)으로<br>즉시 가입 가능한 한화생명 상품입니다.</p>
+                    </div>
+                    <div id="recommend-list" class="recommend-list">
+                        <!-- 추천 상품 카드가 JS로 생성됨 -->
+                    </div>
+                    <div class="modal-btns">
+                        <button id="btn-recommend-close" class="btn-primary">확인</button>
+                    </div>
+                </div>
             </div>
 
             <!-- 경제 퀴즈 배너 -->
