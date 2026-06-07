@@ -823,11 +823,31 @@ let selectedOptionIdx = null;
 
 function showQuiz(idx) {
     const data = QUIZ_DATA[idx];
-    getEl('quiz-step').innerText = `문제 ${idx + 1}/${QUIZ_DATA.length}`;
+    const total = QUIZ_DATA.length;
+    const progressPercent = ((idx) / total) * 100;
+    
+    // UI 업데이트
+    getEl('quiz-step').innerText = `Problem ${idx + 1} of ${total}`;
+    
+    // 프로그레스 바 업데이트
+    let progressBar = getEl('quiz-progress-fill');
+    if (!progressBar) {
+        const barContainer = document.createElement('div');
+        barContainer.className = 'quiz-progress-bar';
+        barContainer.innerHTML = '<div id="quiz-progress-fill" class="quiz-progress-fill"></div>';
+        getEl('quiz-question').parentNode.insertBefore(barContainer, getEl('quiz-question'));
+        progressBar = getEl('quiz-progress-fill');
+    }
+    progressBar.style.width = `${progressPercent}%`;
+
     getEl('quiz-question').innerText = data.q;
     const optionsContainer = getEl('quiz-options');
     optionsContainer.innerHTML = '';
-    getEl('quiz-result').classList.add('hidden');
+    
+    const resultEl = getEl('quiz-result');
+    resultEl.classList.add('hidden');
+    resultEl.innerHTML = '';
+    
     getEl('btn-quiz-check').classList.remove('hidden');
     getEl('btn-quiz-next').classList.add('hidden');
     selectedOptionIdx = null;
@@ -835,7 +855,10 @@ function showQuiz(idx) {
     data.options.forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.innerText = `${i + 1}. ${opt}`;
+        btn.innerHTML = `
+            <span style="width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; background: #F3F4F6; border-radius: 50%; font-size: 11px; font-weight: 700; color: var(--text-muted);">${i + 1}</span>
+            <span>${opt}</span>
+        `;
         btn.onclick = () => {
             document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
@@ -846,16 +869,32 @@ function showQuiz(idx) {
 }
 
 getEl('btn-quiz-check').onclick = () => {
-    if (selectedOptionIdx === null) { alert('정답을 선택해 주세요!'); return; }
+    if (selectedOptionIdx === null) { 
+        alert('정답을 선택해 주세요! 💡'); 
+        return; 
+    }
+    
     const isCorrect = selectedOptionIdx === QUIZ_DATA[currentQuizIdx].answer;
     const resultEl = getEl('quiz-result');
-    resultEl.innerText = isCorrect ? `정답입니다! 👏 ${QUIZ_DATA[currentQuizIdx].desc}` : `오답입니다. 😢 정답은 '${QUIZ_DATA[currentQuizIdx].options[QUIZ_DATA[currentQuizIdx].answer]}'입니다.`;
+    
+    resultEl.innerHTML = `
+        <div style="font-weight: 800; font-size: 16px; margin-bottom: 4px;">${isCorrect ? '✨ Excellent!' : '🤔 Not Quite...'}</div>
+        <div>${isCorrect ? QUIZ_DATA[currentQuizIdx].desc : `The correct answer is <strong>${QUIZ_DATA[currentQuizIdx].options[QUIZ_DATA[currentQuizIdx].answer]}</strong>.`}</div>
+    `;
+    
     resultEl.className = `quiz-result-msg ${isCorrect ? 'correct' : 'wrong'}`;
     resultEl.classList.remove('hidden');
+    
     if (isCorrect) correctAnswersCount++;
+    
     getEl('btn-quiz-check').classList.add('hidden');
     getEl('btn-quiz-next').classList.remove('hidden');
-    getEl('btn-quiz-next').innerText = currentQuizIdx === QUIZ_DATA.length - 1 ? "결과 확인" : "다음 문제";
+    getEl('btn-quiz-next').innerText = currentQuizIdx === QUIZ_DATA.length - 1 ? "View Results" : "Next Question";
+    
+    // 프로그레스 바 최종 업데이트
+    if (currentQuizIdx === QUIZ_DATA.length - 1) {
+        getEl('quiz-progress-fill').style.width = '100%';
+    }
 };
 
 getEl('btn-quiz-next').onclick = async () => {
