@@ -514,10 +514,103 @@ async function loginUser(phone, nickname, birthYear) {
     }
 }
 
+// --- 한화생명 상품 데이터 ---
+const HANWHA_PRODUCTS = [
+    {
+        name: "한화생명 포켓골절보험 (무배당)",
+        category: "미니보험",
+        minAsset: 2000,
+        oneTime: true,
+        desc: "연 2,000원대로 딱 한 번만 납입하면 1년 동안 재해골절을 보장!",
+        url: "https://www.hanwhalife.com/static/content/direct/insurance/product/pocket_fracture.html",
+        tag: "초소액/일시납"
+    },
+    {
+        name: "한화생명 e재테크 저축보험 (무배당)",
+        category: "저축보험",
+        minAsset: 50000,
+        oneTime: false,
+        desc: "1개월만 유지해도 원금 100% 보장! 비과세 혜택까지 챙기세요.",
+        url: "https://www.hanwhalife.com/static/content/direct/insurance/product/saving.html",
+        tag: "목돈마련/월납"
+    },
+    {
+        name: "한화생명 2030 목돈마련 디딤돌저축보험",
+        category: "상생보험",
+        minAsset: 100000,
+        oneTime: false,
+        desc: "청년 대상 5년 확정금리 5%! 미래를 위한 가장 든든한 시작.",
+        url: "https://www.hanwhalife.com/static/content/direct/insurance/product/stepping_stone.html",
+        tag: "청년전용/고금리"
+    },
+    {
+        name: "한화생명 포켓레저보험 (무배당)",
+        category: "레저보험",
+        minAsset: 3000,
+        oneTime: true,
+        desc: "운동이나 여행 중 사고 걱정 끝! 필요한 기간만큼 실속 있게.",
+        url: "https://www.hanwhalife.com/static/content/direct/insurance/product/pocket_leisure.html",
+        tag: "일시납/활동성"
+    }
+];
+
+// --- 한화생명 상품 추천 로직 ---
+function showRecommendedProducts() {
+    if (!currentUser) {
+        alert("로그인이 필요한 기능입니다.");
+        return;
+    }
+
+    const points = currentUser.points || 0;
+    const userBirthYear = currentUser.birthYear || (new Date().getFullYear() - 17);
+    const futureAsset = calculateFutureAsset(userBirthYear, points, 0.05, 0.02);
+    const targetAsset = futureAsset.futureValue;
+
+    getEl('recom-target-asset').innerText = targetAsset.toLocaleString();
+    const container = getEl('recommend-list');
+    container.innerHTML = '';
+
+    // 추천 로직: 예상 자산보다 낮은 최소 가입금액을 가진 상품들 필터링
+    const recommended = HANWHA_PRODUCTS.filter(p => p.minAsset <= targetAsset);
+
+    if (recommended.length === 0) {
+        container.innerHTML = `
+            <div class="empty-recommend">
+                <p>아직 추천할 만한 자산이 부족해요! 😢<br>미션을 더 수행해서 시드머니를 모아보세요!</p>
+            </div>
+        `;
+    } else {
+        recommended.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'recommend-card';
+            card.innerHTML = `
+                <div class="recom-tag">${p.tag}</div>
+                <div class="recom-title">${p.name}</div>
+                <p class="recom-desc">${p.desc}</p>
+                <div class="recom-footer">
+                    <span>최소 가입 가능금액: ₩${p.minAsset.toLocaleString()}</span>
+                    <button class="btn-go-product" onclick="window.open('${p.url}', '_blank')">상품 보기 <i class="fas fa-external-link-alt"></i></button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    getEl('modal-recommend').classList.remove('hidden');
+}
+
 // --- 이벤트 리스너 설정 ---
 async function init() {
     console.log("Initializing app...");
     
+    // 추천 버튼 이벤트 연결
+    const btnShowRecommend = getEl('btn-show-recommend');
+    if (btnShowRecommend) {
+        btnShowRecommend.onclick = showRecommendedProducts;
+    }
+
+    getEl('btn-recommend-close').onclick = () => getEl('modal-recommend').classList.add('hidden');
+`,old_string:
     // 기준정보 로드
     await loadReferenceData();
 
