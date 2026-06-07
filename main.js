@@ -518,14 +518,6 @@ async function loginUser(phone, nickname, birthYear) {
 async function init() {
     console.log("Initializing app...");
     
-    // 추천 버튼 이벤트 연결
-    const btnShowRecommend = getEl('btn-show-recommend');
-    if (btnShowRecommend) {
-        btnShowRecommend.onclick = showRecommendedProducts;
-    }
-
-    getEl('btn-recommend-close').onclick = () => getEl('modal-recommend').classList.add('hidden');
-`,old_string:
     // 기준정보 로드
     await loadReferenceData();
 
