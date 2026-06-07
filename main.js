@@ -734,8 +734,11 @@ async function init() {
                 return;
             }
 
+            const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+            const tag = selectedOption.getAttribute('data-tag') || '챌린지';
+
             const newMission = {
-                tag: typeSelect.options[typeSelect.selectedIndex].text.split(' ')[0],
+                tag: tag,
                 title: titleInput.value.trim(),
                 start: new Date().toLocaleDateString(),
                 end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
@@ -746,13 +749,13 @@ async function init() {
 
             try {
                 await addDoc(collection(db, "missions"), newMission);
-                alert('새로운 챌린지가 등록되었습니다! 🔥');
+                alert('✨ 새로운 챌린지가 성공적으로 퍼블리싱되었습니다!');
                 missionForm.reset();
                 switchPage('dashboard');
                 await updateDashboard();
             } catch (error) {
                 console.error("Mission reg error:", error);
-                alert("등록 실패");
+                alert("등록 실패: " + error.message);
             }
         };
     }

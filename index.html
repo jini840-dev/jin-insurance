@@ -242,29 +242,34 @@
 
         <!-- 3. Admin Page -->
         <section id="page-admin" class="page hidden">
-            <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">챌린지 관리</h2>
-            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">새로운 성장 동력을 설계하세요.</p>
+            <div class="admin-header">
+                <h2 class="logo-main" style="font-size: 24px; font-style: normal; text-transform: none; letter-spacing: -0.04em;">Challenge Studio</h2>
+                <p class="logo-sub" style="font-size: 14px; margin-top: 4px;">새로운 성장 동력을 설계하세요.</p>
+            </div>
 
             <form id="mission-form">
-                <div style="margin-bottom: 16px;">
-                    <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">챌린지 종류</label>
-                    <select id="mission-type" style="width:100%; padding:12px; border:1px solid var(--border-subtle); border-radius:8px; background:white;">
-                        <option value="study">공부/독서 타이머 챌린지</option>
-                        <option value="quiz">행운자산화 퀴즈 챌린지</option>
-                        <option value="family">효도활동 자산화 챌린지</option>
+                <div class="form-group">
+                    <label class="form-label">챌린지 종류</label>
+                    <select id="mission-type">
+                        <option value="study" data-tag="공부">공부/독서 타이머 챌린지</option>
+                        <option value="quiz" data-tag="퀴즈">행운자산화 퀴즈 챌린지</option>
+                        <option value="family" data-tag="효도">효도활동 자산화 챌린지</option>
                     </select>
                 </div>
-                <div style="margin-bottom: 16px;">
-                    <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">챌린지 명</label>
+                <div class="form-group">
+                    <label class="form-label">챌린지 명</label>
                     <input type="text" id="mission-title" placeholder="예: 매일 영단어 10개">
                 </div>
-                <div style="margin-bottom: 24px;">
-                    <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">보상 포인트</label>
+                <div class="form-group">
+                    <label class="form-label">보상 포인트</label>
                     <input type="number" id="mission-reward" placeholder="500">
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 12px;">챌린지 오픈하기</button>
+                
+                <div class="admin-action-btns">
+                    <button type="submit" class="btn-primary">챌린지 퍼블리싱</button>
+                    <button type="button" id="btn-admin-back" class="btn-secondary">대시보드로 돌아가기</button>
+                </div>
             </form>
-            <button id="btn-admin-back" class="btn-secondary" style="width: 100%;">돌아가기</button>
         </section>
     </div>
 
